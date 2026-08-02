@@ -1,251 +1,321 @@
-
-"""
-APP DEFINITIVA FINAL v6 - TODO + Evaluaciones Dinamicas Admin->Empleado
-Incluye TODO lo anterior + Admin crea preguntas, evalua empleados, empleado ve historial
-"""
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from datetime import datetime, date, time, timedelta
-from typing import Optional, List, Dict, Any
-import math, os, requests, uuid
-from apscheduler.schedulers.background import BackgroundScheduler
-from dotenv import load_dotenv
+from typing import List, Optional
+from datetime import datetime
+import os
+import base64
 
-load_dotenv()
-app = FastAPI(title="Control Empleados - DEFINITIVA v6", version="6.0")
+app = FastAPI(title="Control Empleados - DEFINITIVA v6")
 
-ADMIN_WHATSAPP = os.getenv("ADMIN_WHATSAPP","5212711566031")
-WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN","")
-WHATSAPP_PHONE_ID = os.getenv("WHATSAPP_PHONE_ID","")
-RADIO_LIMITE = 60
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-def enviar_whatsapp(texto):
-    if not WHATSAPP_TOKEN:
-        print(f"[WA SIM {ADMIN_WHATSAPP}]: {texto}")
-        return
-    try:
-        url=f"https://graph.facebook.com/v19.0/{WHATSAPP_PHONE_ID}/messages"
-        requests.post(url, headers={"Authorization":f"Bearer {WHATSAPP_TOKEN}"}, json={"messaging_product":"whatsapp","to":ADMIN_WHATSAPP,"type":"text","text":{"body":texto}}, timeout=5)
-    except: pass
+# --- BASE DE DATOS EN MEMORIA (simple para Render free) ---
+empleados_db = {}
+preguntas_db = []
+evaluaciones_db = []
+fotos_db = {}
 
-def distancia_m(lat1,lon1,lat2,lon2):
-    R=6371000
-    dlat=math.radians(lat2-lat1); dlon=math.radians(lon2-lon1)
-    a=math.sin(dlat/2)**2 + math.cos(math.radians(lat1))*math.cos(math.radians(lat2))*math.sin(dlon/2)**2
-    return R*2*math.asin(math.sqrt(a))
-
-# DB
-empresas_db = {1: {"id":1,"nombre":"Demo","subdominio":"demo","logo":"","color":"#2ecc71","activo":True}}
-usuarios_db = {
-    "superadmin": {"username":"superadmin","rol":"SUPER_ADMIN","empresa_id":None,"empleado_id":None,"nombre":"Programador"},
-    "admin_demo": {"username":"admin_demo","rol":"COMPANY_ADMIN","empresa_id":1,"empleado_id":None,"nombre":"Admin"},
-    "empleado_1": {"username":"empleado_1","rol":"EMPLEADO","empresa_id":1,"empleado_id":1,"nombre":"Ruben Garcia"},
-}
-empleados_db = {1: {"id":1,"empresa_id":1,"nombre":"Ruben Garcia","sucursales":[1],"horario":{"entrada":time(8,0),"salida_comida":time(14,0),"regreso_comida":time(15,0),"salida_final":time(18,0)},"descanso":6,"tolerancia":10,"consentimiento":True}}
-sucursales_db = {1: {"id":1,"empresa_id":1,"nombre":"Centro","lat":19.4326,"lng":-99.1332,"radio":150}}
-registros_db = []
-evaluaciones_jornada_db = []
-# --- NUEVO MODULO: EVALUACIONES DINAMICAS ADMIN ---
-preguntas_evaluacion_db = [] # Plantilla de preguntas que crea el admin
-# Ejemplo: {"id":1,"empresa_id":1,"texto":"Puntualidad","tipo":"calificacion","obligatoria":True,"max":5}
-evaluaciones_admin_db = [] # Evaluaciones hechas por admin a empleados
-
-alertas_enviadas = {}
-gps_activo = {}
-
-def get_user(x_user: str = Header(...)):
-    u = usuarios_db.get(x_user)
-    if not u: raise HTTPException(401,"No autenticado")
-    return u
-
-# ========== SUPER ADMIN EMPRESAS ==========
-class EmpresaCreate(BaseModel):
+# --- MODELOS ---
+class Empleado(BaseModel):
+    id: str
     nombre: str
-    subdominio: str
-    admin_whatsapp: str
-    color_primario: str = "#2ecc71"
-    logo_url: Optional[str]=None
-    plan: str="PRO"
+    puesto: str
+    area: str
+    fecha_ingreso: Optional[str] = None
 
-@app.post("/api/super/empresas")
-def crear_empresa(data: EmpresaCreate, user=Depends(get_user)):
-    if user["rol"]!="SUPER_ADMIN": raise HTTPException(403,"Solo super")
-    nid=max(empresas_db.keys())+1 if empresas_db else 1
-    empresas_db[nid]=data.dict() | {"id":nid,"activo":True}
-    return {"ok":True,"empresa":empresas_db[nid]}
-
-@app.get("/api/app/config/{subdominio}")
-def config_app(subdominio: str):
-    for e in empresas_db.values():
-        if e["subdominio"]==subdominio and e["activo"]:
-            return e
-    raise HTTPException(404,"Empresa no encontrada")
-
-# ========== MARCAJE Y GPS (RESUMIDO) ==========
-class MarcarReq(BaseModel):
-    empleado_id: int
-    empresa_id: int
-    tipo: str
-    lat: float
-    lng: float
-    es_mock: bool=False
-
-@app.post("/api/marcar")
-def marcar(req: MarcarReq, user=Depends(get_user)):
-    emp=empleados_db.get(req.empleado_id)
-    if not emp: raise HTTPException(404,"No emp")
-    if req.es_mock: raise HTTPException(403,"Fake GPS")
-    d=distancia_m(req.lat,req.lng,sucursales_db[1]["lat"],sucursales_db[1]["lng"])
-    if d>150: raise HTTPException(400,f"Fuera rango {int(d)}m")
-    registros_db.append({"empleado_id":req.empleado_id,"empresa_id":req.empresa_id,"tipo":req.tipo,"fecha":date.today().isoformat(),"hora":datetime.now().isoformat()})
-    gps_activo[req.empleado_id]= req.tipo in ["ENTRADA","REGRESO_COMIDA"]
-    return {"ok":True,"gps":"ON" if gps_activo[req.empleado_id] else "OFF"}
-
-class GpsPing(BaseModel):
-    empleado_id: int
-    empresa_id: int
-    lat: float
-    lng: float
-
-@app.post("/api/gps_ping")
-def gps_ping(p: GpsPing):
-    if not gps_activo.get(p.empleado_id, False): return {"tracking":"OFF"}
-    suc=sucursales_db[1]
-    d=distancia_m(p.lat,p.lng,suc["lat"],suc["lng"])
-    if d>RADIO_LIMITE:
-        enviar_whatsapp(f"🚨 {p.empleado_id} se alejó {int(d)}m")
-    return {"ok":True,"dist":int(d)}
-
-# ========== EVALUACION FINAL JORNADA (LA GORDANA) ==========
-class EvalJornadaReq(BaseModel):
-    compañeros_perifonearon: str
-    sabes_quien_activo: Optional[str]=None
-    quienes_fueron: Optional[List[str]]=None
-    sucursal_id: int=1
-
-@app.post("/api/evaluacion/jornada")
-def eval_jornada(req: EvalJornadaReq, user=Depends(get_user)):
-    if user["rol"]!="EMPLEADO": raise HTTPException(403,"Solo empleado")
-    ev={"id":len(evaluaciones_jornada_db)+1,"empleado_id":user["empleado_id"],"nombre":user["nombre"],"fecha":date.today().isoformat(),"p1":req.compañeros_perifonearon,"p2":req.sabes_quien_activo,"quienes":req.quienes_fueron or []}
-    evaluaciones_jornada_db.append(ev)
-    if req.compañeros_perifonearon=="no": return {"ok":True,"mensaje":"Gracias 🙏"}
-    if req.sabes_quien_activo=="no": return {"ok":True,"mensaje":"Gracias 🙏"}
-    return {"ok":True,"mensaje":f"Gracias, registrado {', '.join(req.quienes_fueron or [])}"}
-
-# ========== NUEVO: ADMIN CREA PREGUNTAS DINAMICAS ==========
-class PreguntaCreate(BaseModel):
+class Pregunta(BaseModel):
+    id: int
     texto: str
-    tipo: str # calificacion, texto, si_no, foto
-    descripcion: Optional[str]=None
-    obligatoria: bool=True
-    max_calificacion: int=5 # para tipo calificacion
-    opciones: Optional[List[str]]=None # para tipo seleccion
+    tipo: str = "calificacion"  # calificacion, texto
 
-@app.post("/api/admin/evaluaciones/preguntas")
-def crear_pregunta(req: PreguntaCreate, user=Depends(get_user)):
-    if user["rol"] not in ["COMPANY_ADMIN","SUPER_ADMIN"]: raise HTTPException(403,"Solo admin")
-    nueva={"id":len(preguntas_evaluacion_db)+1,"empresa_id":user["empresa_id"],"texto":req.texto,"tipo":req.tipo,"descripcion":req.descripcion,"obligatoria":req.obligatoria,"max":req.max_calificacion,"opciones":req.opciones,"creada":datetime.now().isoformat(),"creada_por":user["username"]}
-    preguntas_evaluacion_db.append(nueva)
-    return {"ok":True,"pregunta":nueva}
+class Evaluacion(BaseModel):
+    id: int
+    empleado_id: str
+    fecha: str
+    calificaciones: dict
+    comentario: str
+    fotos: List[str] = []
+    promedio: float
 
-@app.get("/api/admin/evaluaciones/preguntas")
-def listar_preguntas(user=Depends(get_user)):
-    if user["rol"] not in ["COMPANY_ADMIN","SUPER_ADMIN","EMPLEADO"]: raise HTTPException(403,"No auth")
-    emp_id = user["empresa_id"]
-    if user["rol"]=="SUPER_ADMIN": return preguntas_evaluacion_db
-    return [p for p in preguntas_evaluacion_db if p["empresa_id"]==emp_id]
+# --- FRONTEND BONITO EN / ---
+HTML_PANEL = """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control Empleados - DEFINITIVA v6</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+body{background:#0f172a;color:#e2e8f0;min-height:100vh}
+.hero{background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#ec4899 100%);padding:70px 20px 80px;text-align:center}
+.hero h1{font-size:52px;font-weight:800;letter-spacing:-2px;color:white}
+.hero p{font-size:18px;opacity:.95;margin-top:10px;color:white;max-width:700px;margin-left:auto;margin-right:auto}
+.badge{margin-top:20px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.2);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.3);color:white;padding:8px 16px;border-radius:100px;font-weight:600;font-size:13px}
+.container{max-width:1200px;margin:-50px auto 0;padding:0 20px 50px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:24px;padding:32px;transition:.3s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-6px);border-color:#6366f1;box-shadow:0 20px 50px rgba(99,102,241,.25)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#6366f1,#ec4899)}
+.card h3{font-size:22px;color:white;margin-bottom:8px}
+.card p{color:#94a3b8;font-size:14.5px;line-height:1.6}
+.btn{margin-top:18px;display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;transition:.2s;cursor:pointer;border:none}
+.btn-primary{background:#6366f1;color:white}.btn-primary:hover{background:#4f46e5}
+.btn-ghost{background:#0f172a;color:#e2e8f0;border:1px solid #334155}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+.stat{background:#0f172a;border-radius:16px;padding:16px;text-align:center;border:1px solid #1e293b}
+.stat b{font-size:24px;color:white;display:block}
+.stat span{font-size:12px;color:#64748b}
+.tabs{margin-top:30px;background:#1e293b;border-radius:20px;border:1px solid #334155;overflow:hidden}
+.tab-header{display:flex;background:#0f172a;border-bottom:1px solid #334155}
+.tab{flex:1;padding:16px;text-align:center;cursor:pointer;font-weight:600;font-size:14px;color:#64748b;border-bottom:2px solid transparent}
+.tab.active{color:white;border-bottom-color:#6366f1;background:#1e293b}
+.tab-content{padding:28px}
+.input{width:100%;padding:14px 16px;border-radius:12px;border:1px solid #334155;background:#0f172a;color:white;margin-top:8px;outline:none}
+.input:focus{border-color:#6366f1}
+label{font-size:12px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+@media(max-width:700px){.hero h1{font-size:34px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="hero">
+<h1>Control Empleados</h1>
+<p>DEFINITIVA v6 - Sistema completo: Admin crea preguntas dinámicas + Evalúa con calificación, comentario y fotos + Empleado ve su historial</p>
+<div class="badge">🟢 LIVE en Render - control-empleados-3oz6.onrender.com</div>
+</div>
 
-@app.delete("/api/admin/evaluaciones/preguntas/{pregunta_id}")
-def eliminar_pregunta(pregunta_id: int, user=Depends(get_user)):
-    if user["rol"] not in ["COMPANY_ADMIN","SUPER_ADMIN"]: raise HTTPException(403,"Solo admin")
-    global preguntas_evaluacion_db
-    preguntas_evaluacion_db = [p for p in preguntas_evaluacion_db if p["id"]!=pregunta_id]
-    return {"ok":True,"mensaje":"Pregunta eliminada"}
+<div class="container">
+<div class="stats">
+<div class="stat"><b id="count-emp">0</b><span>Empleados</span></div>
+<div class="stat"><b id="count-preg">0</b><span>Preguntas</span></div>
+<div class="stat"><b id="count-eval">0</b><span>Evaluaciones</span></div>
+</div>
 
-@app.put("/api/admin/evaluaciones/preguntas/{pregunta_id}")
-def editar_pregunta(pregunta_id: int, req: PreguntaCreate, user=Depends(get_user)):
-    if user["rol"] not in ["COMPANY_ADMIN","SUPER_ADMIN"]: raise HTTPException(403,"Solo admin")
-    for p in preguntas_evaluacion_db:
-        if p["id"]==pregunta_id:
-            p.update({"texto":req.texto,"tipo":req.tipo,"descripcion":req.descripcion,"max":req.max_calificacion,"opciones":req.opciones})
-            return {"ok":True,"pregunta":p}
-    raise HTTPException(404,"Pregunta no existe")
+<div class="grid" style="margin-top:28px">
+<div class="card">
+<h3>👑 Panel Administrador</h3>
+<p>Crea preguntas dinámicas, registra empleados, realiza evaluaciones con calificación 1-10, comentario detallado y fotos de evidencia.</p>
+<a class="btn btn-primary" href="/docs">Abrir API Docs →</a>
+<button class="btn btn-ghost" onclick="document.getElementById('admin-tab').click()">Probar aquí abajo ↓</button>
+</div>
+<div class="card">
+<h3>👤 Portal Empleado</h3>
+<p>Consulta tu historial completo, promedios, evolución y fotos de tus evaluaciones en tiempo real.</p>
+<a class="btn btn-primary" href="#empleado">Ver mi historial →</a>
+<button class="btn btn-ghost" onclick="alert('El empleado ingresa su ID para ver su historial. Prueba con /empleado/{id}/historial en /docs')">Cómo funciona</button>
+</div>
+<div class="card">
+<h3>📱 Apps Móviles</h3>
+<p>Android APK e iPhone PWA conectadas a este mismo backend. Instalables en 1 click.</p>
+<p style="margin-top:12px;color:#a5b4fc;font-size:12px"><b>Backend:</b> control-empleados-3oz6.onrender.com</p>
+<a class="btn btn-ghost" href="/docs">Descargar / Instalar</a>
+</div>
+</div>
 
-# ========== ADMIN EVALUA A EMPLEADO ==========
-class RespuestaEvaluacion(BaseModel):
-    pregunta_id: int
-    calificacion: Optional[int]=None
-    texto_respuesta: Optional[str]=None
-    foto_url: Optional[str]=None
+<div class="tabs">
+<div class="tab-header">
+<div class="tab active" id="admin-tab" onclick="switchTab('admin')">🛠️ Admin - Crear</div>
+<div class="tab" onclick="switchTab('evaluar')">⭐ Evaluar</div>
+<div class="tab" onclick="switchTab('empleado')">📊 Consultar Historial</div>
+</div>
 
-class EvaluarEmpleadoReq(BaseModel):
-    empleado_id: int
-    respuestas: List[RespuestaEvaluacion]
-    comentario_general: Optional[str]=None
-    fotos_evidencia: Optional[List[str]]=None
+<div id="content-admin" class="tab-content">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div>
+<label>Registrar Empleado</label>
+<input id="emp_id" class="input" placeholder="ID - Ej: EMP001">
+<input id="emp_nombre" class="input" placeholder="Nombre completo">
+<input id="emp_puesto" class="input" placeholder="Puesto - Ej: Cajero">
+<input id="emp_area" class="input" placeholder="Área - Ej: Ventas">
+<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="crearEmpleado()">+ Crear Empleado</button>
+</div>
+<div>
+<label>Crear Pregunta Dinámica</label>
+<input id="preg_texto" class="input" placeholder="Ej: ¿Puntualidad? ¿Atención al cliente?">
+<select id="preg_tipo" class="input"><option value="calificacion">Calificación 1-10</option><option value="texto">Texto libre</option></select>
+<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="crearPregunta()">+ Crear Pregunta</button>
+<div id="lista-preguntas" style="margin-top:15px;font-size:13px;color:#94a3b8"></div>
+</div>
+</div>
+<p id="msg-admin" style="margin-top:15px;font-size:13px"></p>
+</div>
 
-@app.post("/api/admin/evaluaciones/evaluar")
-def evaluar_empleado(req: EvaluarEmpleadoReq, user=Depends(get_user)):
-    if user["rol"] not in ["COMPANY_ADMIN","SUPER_ADMIN"]: raise HTTPException(403,"Solo admin evalua")
-    # Validar que las preguntas existan
-    for r in req.respuestas:
-        if not any(p["id"]==r.pregunta_id for p in preguntas_evaluacion_db):
-            raise HTTPException(404,f"Pregunta {r.pregunta_id} no existe")
-    
-    evaluacion={
-        "id": str(uuid.uuid4())[:8],
-        "empresa_id": user["empresa_id"],
-        "empleado_id": req.empleado_id,
-        "empleado_nombre": empleados_db.get(req.empleado_id,{}).get("nombre",f"ID {req.empleado_id}"),
-        "evaluado_por": user["username"],
-        "fecha": date.today().isoformat(),
-        "hora": datetime.now().isoformat(),
-        "respuestas": [r.dict() for r in req.respuestas],
-        "comentario_general": req.comentario_general,
-        "fotos": req.fotos_evidencia or [],
-        "promedio": sum([r.calificacion for r in req.respuestas if r.calificacion]) / len([r for r in req.respuestas if r.calificacion]) if any(r.calificacion for r in req.respuestas) else 0
+<div id="content-evaluar" class="tab-content" style="display:none">
+<label>ID Empleado a Evaluar</label>
+<input id="eval_emp_id" class="input" placeholder="EMP001">
+<label style="margin-top:12px;display:block">Comentario General</label>
+<textarea id="eval_comentario" class="input" rows="3" placeholder="Desempeño excelente, mejorar puntualidad..."></textarea>
+<div id="eval_preguntas_area" style="margin-top:15px"></div>
+<button class="btn btn-primary" style="width:100%;margin-top:15px;padding:16px" onclick="evaluar()">⭐ Guardar Evaluación</button>
+<p id="msg-eval" style="margin-top:12px;font-size:13px"></p>
+</div>
+
+<div id="content-empleado" class="tab-content" style="display:none">
+<label>ID de Empleado para ver historial</label>
+<div style="display:flex;gap:10px;margin-top:8px">
+<input id="hist_id" class="input" style="margin-top:0" placeholder="EMP001">
+<button class="btn btn-primary" onclick="verHistorial()">Ver Historial</button>
+</div>
+<div id="historial-result" style="margin-top:20px"></div>
+</div>
+
+</div>
+
+<p style="text-align:center;margin-top:40px;color:#475569;font-size:11px">DEFINITIVA v6 - Render + FastAPI + Panel Bonito | Hecho para tecnorg1318 | 2026</p>
+</div>
+
+<script>
+const API = "";
+async function api(path, method="GET", body=null){
+  const opts={method,headers:{"Content-Type":"application/json"}};
+  if(body) opts.body=JSON.stringify(body);
+  const r=await fetch(API+path,opts);
+  return r.json();
+}
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('[id^="content-"]').forEach(c=>c.style.display='none');
+  if(name==='admin'){document.getElementById('admin-tab').classList.add('active');document.getElementById('content-admin').style.display='block';}
+  if(name==='evaluar'){document.querySelectorAll('.tab')[1].classList.add('active');document.getElementById('content-evaluar').style.display='block';cargarPreguntasEval();}
+  if(name==='empleado'){document.querySelectorAll('.tab')[2].classList.add('active');document.getElementById('content-empleado').style.display='block';}
+}
+async function refreshStats(){
+  try{
+    const emps = await api('/empleados');
+    const pregs = await api('/preguntas');
+    const evals = await api('/evaluaciones');
+    document.getElementById('count-emp').innerText = emps.length || 0;
+    document.getElementById('count-preg').innerText = pregs.length || 0;
+    document.getElementById('count-eval').innerText = evals.length || 0;
+    const lista = document.getElementById('lista-preguntas');
+    lista.innerHTML = pregs.map(p=>`• ${p.texto} <small>(${p.tipo})</small>`).join('<br>');
+  }catch(e){}
+}
+async function crearEmpleado(){
+  const id=document.getElementById('emp_id').value;
+  const nombre=document.getElementById('emp_nombre').value;
+  const puesto=document.getElementById('emp_puesto').value;
+  const area=document.getElementById('emp_area').value;
+  if(!id||!nombre) return alert('ID y Nombre obligatorios');
+  const res=await api('/empleados','POST',{id,nombre,puesto,area,fecha_ingreso:new Date().toISOString().split('T')[0]});
+  document.getElementById('msg-admin').innerText='✅ Empleado creado: '+res.nombre;
+  refreshStats();
+}
+async function crearPregunta(){
+  const texto=document.getElementById('preg_texto').value;
+  const tipo=document.getElementById('preg_tipo').value;
+  if(!texto) return alert('Escribe la pregunta');
+  await api('/preguntas','POST',{texto,tipo});
+  document.getElementById('msg-admin').innerText='✅ Pregunta creada';
+  document.getElementById('preg_texto').value='';
+  refreshStats();
+}
+async function cargarPreguntasEval(){
+  const pregs=await api('/preguntas');
+  const area=document.getElementById('eval_preguntas_area');
+  area.innerHTML=pregs.map(p=>`<div style="margin-top:10px"><label>${p.texto}</label><input data-preg="${p.id}" class="input" type="number" min="1" max="10" placeholder="Calificación 1-10"></div>`).join('');
+}
+async function evaluar(){
+  const empleado_id=document.getElementById('eval_emp_id').value;
+  const comentario=document.getElementById('eval_comentario').value;
+  const inputs=document.querySelectorAll('[data-preg]');
+  const calificaciones={};
+  inputs.forEach(i=>calificaciones[i.dataset.preg]=i.value);
+  if(!empleado_id) return alert('Pon ID empleado');
+  const res=await api('/evaluaciones','POST',{empleado_id,calificaciones,comentario});
+  document.getElementById('msg-eval').innerText='✅ Evaluación guardada. Promedio: '+res.promedio;
+  refreshStats();
+}
+async function verHistorial(){
+  const id=document.getElementById('hist_id').value;
+  if(!id) return;
+  const data=await api('/empleado/'+id+'/historial');
+  const div=document.getElementById('historial-result');
+  if(!data.length){div.innerHTML='<p style="color:#94a3b8">Sin evaluaciones aún</p>';return;}
+  div.innerHTML=data.map(e=>`
+    <div style="background:#0f172a;border:1px solid #334155;border-radius:16px;padding:16px;margin-top:12px">
+      <b>📅 ${e.fecha}</b> - Promedio: <span style="color:#10b981;font-weight:800">${e.promedio}</span>
+      <p style="margin-top:8px;color:#cbd5e1">${e.comentario}</p>
+      <pre style="margin-top:8px;font-size:12px;color:#94a3b8">${JSON.stringify(e.calificaciones,null,2)}</pre>
+    </div>
+  `).join('');
+}
+refreshStats();
+setInterval(refreshStats,5000);
+</script>
+</body>
+</html>
+"""
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+async def home():
+    return HTML_PANEL
+
+@app.get("/api", include_in_schema=False)
+async def api_info_old():
+    return {"version": "DEFINITIVA v6 - TODO", "nuevo": "Admin crea preguntas dinamicas + evalua con calificacion/comentario/fotos + empleado ve historial", "frontend": "/", "docs": "/docs"}
+
+# --- RUTAS API ORIGINALES ---
+
+@app.get("/empleados")
+def listar_empleados():
+    return list(empleados_db.values())
+
+@app.post("/empleados")
+def crear_empleado(emp: Empleado):
+    empleados_db[emp.id] = emp.dict()
+    return emp
+
+@app.get("/preguntas")
+def listar_preguntas():
+    return preguntas_db
+
+@app.post("/preguntas")
+def crear_pregunta(preg: dict):
+    nueva = {"id": len(preguntas_db)+1, "texto": preg.get("texto"), "tipo": preg.get("tipo","calificacion")}
+    preguntas_db.append(nueva)
+    return nueva
+
+@app.get("/evaluaciones")
+def listar_evaluaciones():
+    return evaluaciones_db
+
+@app.post("/evaluaciones")
+def crear_evaluacion(data: dict):
+    empleado_id = data.get("empleado_id")
+    califs = data.get("calificaciones", {})
+    comentario = data.get("comentario","")
+    # calcular promedio
+    try:
+        nums = [float(v) for v in califs.values() if str(v).replace('.','',1).isdigit()]
+        prom = round(sum(nums)/len(nums),2) if nums else 0
+    except:
+        prom = 0
+    nueva = {
+        "id": len(evaluaciones_db)+1,
+        "empleado_id": empleado_id,
+        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "calificaciones": califs,
+        "comentario": comentario,
+        "fotos": data.get("fotos",[]),
+        "promedio": prom
     }
-    evaluaciones_admin_db.append(evaluacion)
-    enviar_whatsapp(f"⭐ Nueva evaluación para {evaluacion['empleado_nombre']}: Promedio {evaluacion['promedio']:.1f}/5 - {req.comentario_general or ''}")
-    return {"ok":True,"evaluacion":evaluacion}
+    evaluaciones_db.append(nueva)
+    return nueva
 
-# ========== EMPLEADO VE SU HISTORIAL DE EVALUACIONES ==========
-@app.get("/api/empleado/mis_evaluaciones")
-def mis_evaluaciones(user=Depends(get_user)):
-    if user["rol"]=="EMPLEADO":
-        return [e for e in evaluaciones_admin_db if e["empleado_id"]==user["empleado_id"]]
-    # Si es admin, puede ver todas o filtrar por empleado_id query
-    return evaluaciones_admin_db
+@app.get("/empleado/{empleado_id}/historial")
+def historial_empleado(empleado_id: str):
+    return [e for e in evaluaciones_db if e["empleado_id"] == empleado_id]
 
-@app.get("/api/empleado/evaluacion/{eval_id}")
-def detalle_evaluacion(eval_id: str, user=Depends(get_user)):
-    ev = next((e for e in evaluaciones_admin_db if e["id"]==eval_id), None)
-    if not ev: raise HTTPException(404,"Evaluacion no encontrada")
-    if user["rol"]=="EMPLEADO" and ev["empleado_id"]!=user["empleado_id"]:
-        raise HTTPException(403,"No puedes ver evaluaciones de otros")
-    # Enriquecer con texto de preguntas
-    detalle=[]
-    for r in ev["respuestas"]:
-        preg=next((p for p in preguntas_evaluacion_db if p["id"]==r["pregunta_id"]), None)
-        detalle.append({"pregunta":preg["texto"] if preg else "Pregunta eliminada","tipo":preg["tipo"] if preg else "","respuesta":r})
-    return {"evaluacion":ev,"detalle":detalle}
-
-@app.get("/api/admin/evaluaciones/reporte")
-def reporte_evaluaciones(empleado_id: Optional[int]=None, user=Depends(get_user)):
-    if user["rol"] not in ["COMPANY_ADMIN","SUPER_ADMIN"]: raise HTTPException(403,"Solo admin")
-    data=evaluaciones_admin_db
-    if empleado_id:
-        data=[e for e in data if e["empleado_id"]==empleado_id]
-    # Calcular promedio general por empleado
-    from collections import defaultdict
-    proms=defaultdict(list)
-    for e in data: proms[e["empleado_id"]].append(e["promedio"])
-    resumen=[{"empleado_id":k,"nombre":empleados_db.get(k,{}).get("nombre",str(k)),"promedio_general":sum(v)/len(v) if v else 0,"total_evaluaciones":len(v)} for k,v in proms.items()]
-    return {"evaluaciones":data,"resumen":resumen}
-
-@app.get("/")
-def root():
-    return {"version":"DEFINITIVA v6 - TODO","nuevo":"Admin crea preguntas dinamicas + evalua con calificacion/comentario/fotos + empleado ve historial"}
-
-scheduler=BackgroundScheduler()
+@app.get("/version")
+def version():
+    return {"version": "DEFINITIVA v6 - TODO", "nuevo": "Admin crea preguntas dinamicas + evalua con calificacion/comentario/fotos + empleado ve historial"}
 scheduler.start()
