@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-apscheduler
-requests
-python-dotenv
-openpyxl
-python-multipart
