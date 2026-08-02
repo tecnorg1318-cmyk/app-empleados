@@ -1,322 +1,273 @@
-from fastapi import FastAPI, UploadFile, File, Form
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Optional
 from datetime import datetime
-import os
-import base64
+import uuid
 
-app = FastAPI(title="Control Empleados - DEFINITIVA v6")
+app = FastAPI()
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# --- BASE DE DATOS EN MEMORIA (simple para Render free) ---
+sucursales_db = {}
 empleados_db = {}
-preguntas_db = []
 evaluaciones_db = []
-fotos_db = {}
+asistencias_db = []
+alertas_db = []
 
-# --- MODELOS ---
-class Empleado(BaseModel):
-    id: str
-    nombre: str
-    puesto: str
-    area: str
-    fecha_ingreso: Optional[str] = None
+PREGUNTAS = [
+    {"id":1,"txt":"¿Limpieza de botarga?","tipo":"cal","puntos":10},
+    {"id":2,"txt":"¿Limpieza de ropa?","tipo":"cal","puntos":10},
+    {"id":3,"txt":"¿Limpieza de guantes?","tipo":"cal","puntos":10},
+    {"id":4,"txt":"¿Limpieza de zapatos?","tipo":"cal","puntos":10},
+    {"id":5,"txt":"¿Baile?","tipo":"cal","puntos":10},
+    {"id":6,"txt":"¿Comentario de baile?","tipo":"texto","puntos":0},
+    {"id":7,"txt":"¿Actitud?","tipo":"cal","puntos":10},
+    {"id":8,"txt":"¿Cumple con políticas y valores de la empresa?","tipo":"cal","puntos":10},
+    {"id":9,"txt":"¿Mantiene un ambiente positivo en el trabajo?","tipo":"cal","puntos":10},
+    {"id":10,"txt":"¿Disponibilidad para apoyar?","tipo":"cal","puntos":10},
+    {"id":11,"txt":"¿Cumplimiento de horarios?","tipo":"cal","puntos":10},
+    {"id":12,"txt":"¿Área por mejorar?","tipo":"texto","puntos":0},
+]
 
-class Pregunta(BaseModel):
-    id: int
-    texto: str
-    tipo: str = "calificacion"  # calificacion, texto
+@app.post("/api/login")
+def login(d: dict):
+    u=d.get("usuario")
+    if u=="admin" and d.get("password")=="admin123": return {"rol":"admin","usuario":u}
+    if u in empleados_db: return {"rol":"empleado","usuario":u,"nombre":empleados_db[u]["nombre"]}
+    raise HTTPException(401, "No existe")
 
-class Evaluacion(BaseModel):
-    id: int
-    empleado_id: str
-    fecha: str
-    calificaciones: dict
-    comentario: str
-    fotos: List[str] = []
-    promedio: float
-
-# --- FRONTEND BONITO EN / ---
-HTML_PANEL = """
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Control Empleados - DEFINITIVA v6</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
-body{background:#0f172a;color:#e2e8f0;min-height:100vh}
-.hero{background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#ec4899 100%);padding:70px 20px 80px;text-align:center}
-.hero h1{font-size:52px;font-weight:800;letter-spacing:-2px;color:white}
-.hero p{font-size:18px;opacity:.95;margin-top:10px;color:white;max-width:700px;margin-left:auto;margin-right:auto}
-.badge{margin-top:20px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.2);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.3);color:white;padding:8px 16px;border-radius:100px;font-weight:600;font-size:13px}
-.container{max-width:1200px;margin:-50px auto 0;padding:0 20px 50px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px}
-.card{background:#1e293b;border:1px solid #334155;border-radius:24px;padding:32px;transition:.3s;position:relative;overflow:hidden}
-.card:hover{transform:translateY(-6px);border-color:#6366f1;box-shadow:0 20px 50px rgba(99,102,241,.25)}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#6366f1,#ec4899)}
-.card h3{font-size:22px;color:white;margin-bottom:8px}
-.card p{color:#94a3b8;font-size:14.5px;line-height:1.6}
-.btn{margin-top:18px;display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;transition:.2s;cursor:pointer;border:none}
-.btn-primary{background:#6366f1;color:white}.btn-primary:hover{background:#4f46e5}
-.btn-ghost{background:#0f172a;color:#e2e8f0;border:1px solid #334155}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
-.stat{background:#0f172a;border-radius:16px;padding:16px;text-align:center;border:1px solid #1e293b}
-.stat b{font-size:24px;color:white;display:block}
-.stat span{font-size:12px;color:#64748b}
-.tabs{margin-top:30px;background:#1e293b;border-radius:20px;border:1px solid #334155;overflow:hidden}
-.tab-header{display:flex;background:#0f172a;border-bottom:1px solid #334155}
-.tab{flex:1;padding:16px;text-align:center;cursor:pointer;font-weight:600;font-size:14px;color:#64748b;border-bottom:2px solid transparent}
-.tab.active{color:white;border-bottom-color:#6366f1;background:#1e293b}
-.tab-content{padding:28px}
-.input{width:100%;padding:14px 16px;border-radius:12px;border:1px solid #334155;background:#0f172a;color:white;margin-top:8px;outline:none}
-.input:focus{border-color:#6366f1}
-label{font-size:12px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-@media(max-width:700px){.hero h1{font-size:34px}.grid{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<div class="hero">
-<h1>Control Empleados</h1>
-<p>DEFINITIVA v6 - Sistema completo: Admin crea preguntas dinámicas + Evalúa con calificación, comentario y fotos + Empleado ve su historial</p>
-<div class="badge">🟢 LIVE en Render - control-empleados-3oz6.onrender.com</div>
-</div>
-
-<div class="container">
-<div class="stats">
-<div class="stat"><b id="count-emp">0</b><span>Empleados</span></div>
-<div class="stat"><b id="count-preg">0</b><span>Preguntas</span></div>
-<div class="stat"><b id="count-eval">0</b><span>Evaluaciones</span></div>
-</div>
-
-<div class="grid" style="margin-top:28px">
-<div class="card">
-<h3>👑 Panel Administrador</h3>
-<p>Crea preguntas dinámicas, registra empleados, realiza evaluaciones con calificación 1-10, comentario detallado y fotos de evidencia.</p>
-<a class="btn btn-primary" href="/docs">Abrir API Docs →</a>
-<button class="btn btn-ghost" onclick="document.getElementById('admin-tab').click()">Probar aquí abajo ↓</button>
-</div>
-<div class="card">
-<h3>👤 Portal Empleado</h3>
-<p>Consulta tu historial completo, promedios, evolución y fotos de tus evaluaciones en tiempo real.</p>
-<a class="btn btn-primary" href="#empleado">Ver mi historial →</a>
-<button class="btn btn-ghost" onclick="alert('El empleado ingresa su ID para ver su historial. Prueba con /empleado/{id}/historial en /docs')">Cómo funciona</button>
-</div>
-<div class="card">
-<h3>📱 Apps Móviles</h3>
-<p>Android APK e iPhone PWA conectadas a este mismo backend. Instalables en 1 click.</p>
-<p style="margin-top:12px;color:#a5b4fc;font-size:12px"><b>Backend:</b> control-empleados-3oz6.onrender.com</p>
-<a class="btn btn-ghost" href="/docs">Descargar / Instalar</a>
-</div>
-</div>
-
-<div class="tabs">
-<div class="tab-header">
-<div class="tab active" id="admin-tab" onclick="switchTab('admin')">🛠️ Admin - Crear</div>
-<div class="tab" onclick="switchTab('evaluar')">⭐ Evaluar</div>
-<div class="tab" onclick="switchTab('empleado')">📊 Consultar Historial</div>
-</div>
-
-<div id="content-admin" class="tab-content">
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-<div>
-<label>Registrar Empleado</label>
-<input id="emp_id" class="input" placeholder="ID - Ej: EMP001">
-<input id="emp_nombre" class="input" placeholder="Nombre completo">
-<input id="emp_puesto" class="input" placeholder="Puesto - Ej: Cajero">
-<input id="emp_area" class="input" placeholder="Área - Ej: Ventas">
-<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="crearEmpleado()">+ Crear Empleado</button>
-</div>
-<div>
-<label>Crear Pregunta Dinámica</label>
-<input id="preg_texto" class="input" placeholder="Ej: ¿Puntualidad? ¿Atención al cliente?">
-<select id="preg_tipo" class="input"><option value="calificacion">Calificación 1-10</option><option value="texto">Texto libre</option></select>
-<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="crearPregunta()">+ Crear Pregunta</button>
-<div id="lista-preguntas" style="margin-top:15px;font-size:13px;color:#94a3b8"></div>
-</div>
-</div>
-<p id="msg-admin" style="margin-top:15px;font-size:13px"></p>
-</div>
-
-<div id="content-evaluar" class="tab-content" style="display:none">
-<label>ID Empleado a Evaluar</label>
-<input id="eval_emp_id" class="input" placeholder="EMP001">
-<label style="margin-top:12px;display:block">Comentario General</label>
-<textarea id="eval_comentario" class="input" rows="3" placeholder="Desempeño excelente, mejorar puntualidad..."></textarea>
-<div id="eval_preguntas_area" style="margin-top:15px"></div>
-<button class="btn btn-primary" style="width:100%;margin-top:15px;padding:16px" onclick="evaluar()">⭐ Guardar Evaluación</button>
-<p id="msg-eval" style="margin-top:12px;font-size:13px"></p>
-</div>
-
-<div id="content-empleado" class="tab-content" style="display:none">
-<label>ID de Empleado para ver historial</label>
-<div style="display:flex;gap:10px;margin-top:8px">
-<input id="hist_id" class="input" style="margin-top:0" placeholder="EMP001">
-<button class="btn btn-primary" onclick="verHistorial()">Ver Historial</button>
-</div>
-<div id="historial-result" style="margin-top:20px"></div>
-</div>
-
-</div>
-
-<p style="text-align:center;margin-top:40px;color:#475569;font-size:11px">DEFINITIVA v6 - Render + FastAPI + Panel Bonito | Hecho para tecnorg1318 | 2026</p>
-</div>
-
-<script>
-const API = "";
-async function api(path, method="GET", body=null){
-  const opts={method,headers:{"Content-Type":"application/json"}};
-  if(body) opts.body=JSON.stringify(body);
-  const r=await fetch(API+path,opts);
-  return r.json();
-}
-function switchTab(name){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('[id^="content-"]').forEach(c=>c.style.display='none');
-  if(name==='admin'){document.getElementById('admin-tab').classList.add('active');document.getElementById('content-admin').style.display='block';}
-  if(name==='evaluar'){document.querySelectorAll('.tab')[1].classList.add('active');document.getElementById('content-evaluar').style.display='block';cargarPreguntasEval();}
-  if(name==='empleado'){document.querySelectorAll('.tab')[2].classList.add('active');document.getElementById('content-empleado').style.display='block';}
-}
-async function refreshStats(){
-  try{
-    const emps = await api('/empleados');
-    const pregs = await api('/preguntas');
-    const evals = await api('/evaluaciones');
-    document.getElementById('count-emp').innerText = emps.length || 0;
-    document.getElementById('count-preg').innerText = pregs.length || 0;
-    document.getElementById('count-eval').innerText = evals.length || 0;
-    const lista = document.getElementById('lista-preguntas');
-    lista.innerHTML = pregs.map(p=>`• ${p.texto} <small>(${p.tipo})</small>`).join('<br>');
-  }catch(e){}
-}
-async function crearEmpleado(){
-  const id=document.getElementById('emp_id').value;
-  const nombre=document.getElementById('emp_nombre').value;
-  const puesto=document.getElementById('emp_puesto').value;
-  const area=document.getElementById('emp_area').value;
-  if(!id||!nombre) return alert('ID y Nombre obligatorios');
-  const res=await api('/empleados','POST',{id,nombre,puesto,area,fecha_ingreso:new Date().toISOString().split('T')[0]});
-  document.getElementById('msg-admin').innerText='✅ Empleado creado: '+res.nombre;
-  refreshStats();
-}
-async function crearPregunta(){
-  const texto=document.getElementById('preg_texto').value;
-  const tipo=document.getElementById('preg_tipo').value;
-  if(!texto) return alert('Escribe la pregunta');
-  await api('/preguntas','POST',{texto,tipo});
-  document.getElementById('msg-admin').innerText='✅ Pregunta creada';
-  document.getElementById('preg_texto').value='';
-  refreshStats();
-}
-async function cargarPreguntasEval(){
-  const pregs=await api('/preguntas');
-  const area=document.getElementById('eval_preguntas_area');
-  area.innerHTML=pregs.map(p=>`<div style="margin-top:10px"><label>${p.texto}</label><input data-preg="${p.id}" class="input" type="number" min="1" max="10" placeholder="Calificación 1-10"></div>`).join('');
-}
-async function evaluar(){
-  const empleado_id=document.getElementById('eval_emp_id').value;
-  const comentario=document.getElementById('eval_comentario').value;
-  const inputs=document.querySelectorAll('[data-preg]');
-  const calificaciones={};
-  inputs.forEach(i=>calificaciones[i.dataset.preg]=i.value);
-  if(!empleado_id) return alert('Pon ID empleado');
-  const res=await api('/evaluaciones','POST',{empleado_id,calificaciones,comentario});
-  document.getElementById('msg-eval').innerText='✅ Evaluación guardada. Promedio: '+res.promedio;
-  refreshStats();
-}
-async function verHistorial(){
-  const id=document.getElementById('hist_id').value;
-  if(!id) return;
-  const data=await api('/empleado/'+id+'/historial');
-  const div=document.getElementById('historial-result');
-  if(!data.length){div.innerHTML='<p style="color:#94a3b8">Sin evaluaciones aún</p>';return;}
-  div.innerHTML=data.map(e=>`
-    <div style="background:#0f172a;border:1px solid #334155;border-radius:16px;padding:16px;margin-top:12px">
-      <b>📅 ${e.fecha}</b> - Promedio: <span style="color:#10b981;font-weight:800">${e.promedio}</span>
-      <p style="margin-top:8px;color:#cbd5e1">${e.comentario}</p>
-      <pre style="margin-top:8px;font-size:12px;color:#94a3b8">${JSON.stringify(e.calificaciones,null,2)}</pre>
-    </div>
-  `).join('');
-}
-refreshStats();
-setInterval(refreshStats,5000);
-</script>
-</body>
-</html>
-"""
-
-@app.get("/", response_class=HTMLResponse, include_in_schema=False)
-async def home():
-    return HTML_PANEL
-
-@app.get("/api", include_in_schema=False)
-async def api_info_old():
-    return {"version": "DEFINITIVA v6 - TODO", "nuevo": "Admin crea preguntas dinamicas + evalua con calificacion/comentario/fotos + empleado ve historial", "frontend": "/", "docs": "/docs"}
-
-# --- RUTAS API ORIGINALES ---
-
+@app.get("/sucursales")
+def ls(): return list(sucursales_db.values())
+@app.post("/sucursales")
+def cs(s: dict):
+    sucursales_db[s["id"]]=s
+    return s
 @app.get("/empleados")
-def listar_empleados():
-    return list(empleados_db.values())
-
+def le(): return list(empleados_db.values())
 @app.post("/empleados")
-def crear_empleado(emp: Empleado):
-    empleados_db[emp.id] = emp.dict()
-    return emp
+def ce(e: dict):
+    empleados_db[e["id"]]=e
+    return e
 
-@app.get("/preguntas")
-def listar_preguntas():
-    return preguntas_db
-
-@app.post("/preguntas")
-def crear_pregunta(preg: dict):
-    nueva = {"id": len(preguntas_db)+1, "texto": preg.get("texto"), "tipo": preg.get("tipo","calificacion")}
-    preguntas_db.append(nueva)
+@app.post("/evaluaciones")
+def crear_eval(data: dict):
+    hoy=datetime.now()
+    # Para prueba, permitir siempre pero avisar si no es 25-31
+    # Si quieres bloquear, descomenta:
+    # if hoy.day < 25:
+    #    raise HTTPException(400, f"Solo del 25 al 31. Hoy es {hoy.day}")
+    eid=data.get("empleado_id")
+    if eid not in empleados_db: raise HTTPException(404)
+    cals=data.get("calificaciones",{})
+    # Calcular total de 100 (solo 10 preguntas)
+    total=0
+    detalle={}
+    for q in PREGUNTAS:
+        if q["tipo"]=="cal":
+            v=cals.get(str(q["id"]),0)
+            try: v=int(v)
+            except: v=0
+            total+=v
+            detalle[q["txt"]]=v
+    mes=hoy.strftime("%Y-%m")
+    # Evitar duplicado mismo mes
+    if any(ev["empleado_id"]==eid and ev["mes"]==mes for ev in evaluaciones_db):
+        raise HTTPException(400, "Ya evaluado este mes")
+    nivel="Necesita Mejorar"
+    if total>=90: nivel="EXCELENTE 🌟"
+    elif total>=80: nivel="Muy Bueno"
+    elif total>=70: nivel="Bueno"
+    elif total>=60: nivel="Regular"
+    # retardos
+    retardos=[a for a in asistencias_db if a["empleado_id"]==eid and mes in a["fecha"] and a["retardo_min"]>0]
+    nueva={
+        "id":len(evaluaciones_db)+1,
+        "empleado_id":eid,
+        "empleado_nombre":empleados_db[eid]["nombre"],
+        "fecha":hoy.strftime("%Y-%m-%d %H:%M"),
+        "mes":mes,
+        "calificaciones":cals,
+        "detalle_calificaciones":detalle,
+        "total":total,  # de 100
+        "nivel":nivel,
+        "retardos":retardos,
+        "comentario_baile":cals.get("6",""),
+        "area_mejorar":cals.get("12","")
+    }
+    evaluaciones_db.append(nueva)
+    # NOTIFICACIÓN AUTOMÁTICA AL EMPLEADO
+    msg=f"📊 EVALUACIÓN {mes}: Calificación {total}/100 - {nivel}. "
+    if total==100: msg+= "¡FELICIDADES! Eres EXCELENTE, 100/100 🌟"
+    else: msg+= f"Te faltaron {100-total} puntos para el 100. "
+    if retardos: msg+= f"Tuviste {len(retardos)} retardo(s) este mes. "
+    if cals.get("12"): msg+= f"Área por mejorar: {cals.get('12')}"
+    alertas_db.append({"id":str(uuid.uuid4())[:6],"empleado_id":eid,"mensaje":msg,"fecha":hoy.strftime("%Y-%m-%d %H:%M"),"total":total,"nivel":nivel,"tipo":"evaluacion"})
     return nueva
 
 @app.get("/evaluaciones")
-def listar_evaluaciones():
-    return evaluaciones_db
+def list_ev(): return evaluaciones_db
+@app.get("/empleado/{eid}/historial")
+def hist(eid: str): return [e for e in evaluaciones_db if e["empleado_id"]==eid]
+@app.get("/alertas/{eid}")
+def al(eid: str): return [a for a in alertas_db if a["empleado_id"]==eid][::-1]
+@app.get("/empleado/{eid}/retardos-mes")
+def ret(eid: str):
+    mes=datetime.now().strftime("%Y-%m")
+    return [a for a in asistencias_db if a["empleado_id"]==eid and mes in a["fecha"] and a["retardo_min"]>0]
+@app.post("/asistencia/checkin")
+def checkin(data: dict):
+    eid=data.get("empleado_id")
+    ahora=datetime.now()
+    dias=["lunes","martes","miercoles","jueves","viernes","sabado","domingo"]
+    hoy=dias[ahora.weekday()]
+    suc_id=empleados_db.get(eid,{}).get("horario",{}).get(hoy,"")
+    suc=sucursales_db.get(suc_id)
+    retardo=0
+    if suc:
+        try:
+            h,m=map(int,suc.get("hora_entrada","08:00").split(":"))
+            ent=ahora.replace(hour=h,minute=m,second=0,microsecond=0)
+            retardo=max(0, round((ahora-ent).total_seconds()/60,1))
+        except: pass
+    reg={"empleado_id":eid,"fecha":ahora.strftime("%Y-%m"),"fecha_dia":ahora.strftime("%Y-%m-%d"),"hora":ahora.strftime("%H:%M"),"sucursal_id":suc_id,"retardo_min":retardo,"fecha_completa":ahora.strftime("%Y-%m-%d %H:%M")}
+    asistencias_db.append(reg)
+    return reg
+@app.get("/asistencias/{eid}")
+def asis(eid: str): return [a for a in asistencias_db if a["empleado_id"]==eid][::-1]
 
-@app.post("/evaluaciones")
-def crear_evaluacion(data: dict):
-    empleado_id = data.get("empleado_id")
-    califs = data.get("calificaciones", {})
-    comentario = data.get("comentario","")
-    # calcular promedio
-    try:
-        nums = [float(v) for v in califs.values() if str(v).replace('.','',1).isdigit()]
-        prom = round(sum(nums)/len(nums),2) if nums else 0
-    except:
-        prom = 0
-    nueva = {
-        "id": len(evaluaciones_db)+1,
-        "empleado_id": empleado_id,
-        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "calificaciones": califs,
-        "comentario": comentario,
-        "fotos": data.get("fotos",[]),
-        "promedio": prom
-    }
-    evaluaciones_db.append(nueva)
-    return nueva
+HTML = """
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Evaluación 100 puntos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+body{background:#0f172a;color:#e2e8f0}
+.hero{background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);padding:30px 20px 50px;text-align:center}
+.container{max-width:1100px;margin:-30px auto;padding:20px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:18px;margin-top:14px}
+.input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:white;margin-top:6px}
+.btn{padding:10px 16px;border-radius:10px;border:none;background:#6366f1;color:white;font-weight:700;cursor:pointer;margin-top:8px}
+.badge{padding:4px 8px;border-radius:6px;font-size:11px;background:#6366f120;color:#a5b4fc;border:1px solid #6366f140;margin:2px;display:inline-block}
+.preg{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:12px;margin-top:10px}
+.login{background:#1e293b;border:1px solid #334155;border-radius:20px;padding:28px;max-width:380px;margin:80px auto}
+.total-box{background:linear-gradient(135deg,#10b981,#059669);border-radius:16px;padding:20px;text-align:center;color:white;margin-top:16px}
+.total-box.excelente{background:linear-gradient(135deg,#f59e0b,#ef4444);animation:pulse 1.5s infinite}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+.notif{background:#6366f115;border:1px solid #6366f140;border-radius:12px;padding:14px;margin-top:10px}
+</style></head><body>
+<div id="login" class="login"><h2 style="text-align:center">Evaluación 100 pts</h2><p style="text-align:center;color:#94a3b8;font-size:11px">10 preguntas x 10 = 100 Excelente</p><input id="u" class="input" placeholder="admin"><input id="p" class="input" type="password" placeholder="admin123"><button class="btn" style="width:100%" onclick="login()">Ingresar</button><p id="msg" style="text-align:center;color:#f87171;font-size:12px;margin-top:8px"></p></div>
 
-@app.get("/empleado/{empleado_id}/historial")
-def historial_empleado(empleado_id: str):
-    return [e for e in evaluaciones_db if e["empleado_id"] == empleado_id]
+<div id="app" style="display:none">
+<div class="hero"><h1 style="color:white">📋 Evaluación Oficial 100 Puntos</h1><p style="color:white;opacity:.9;font-size:13px">10 calificaciones 1-10 = 100 • Preg 6 y 12 no suman • Notificación automática</p></div>
+<div class="container">
 
-@app.get("/version")
-def version():
-    return {"version": "DEFINITIVA v6 - TODO", "nuevo": "Admin crea preguntas dinamicas + evalua con calificacion/comentario/fotos + empleado ve historial"}
+<div id="admin-area" style="display:none">
+<div class="card"><h3>🏢 Sucursales</h3><div style="display:flex;gap:8px"><input id="suc_id" class="input" placeholder="SUC001"><input id="suc_nombre" class="input" placeholder="Nombre"><input id="suc_he" class="input" type="time" value="08:00"></div><button class="btn" onclick="crearSuc()">+ Crear</button><div id="list-suc" style="margin-top:8px"></div></div>
+<div class="card"><h3>👤 Empleados</h3><input id="emp_id" class="input" placeholder="EMP001"><input id="emp_nombre" class="input" placeholder="Nombre"><div id="check-suc" style="background:#0f172a;border-radius:8px;padding:6px;margin-top:6px;max-height:100px;overflow:auto"></div><button class="btn" onclick="crearEmp()">+ Crear</button></div>
 
- 
+<div class="card"><h3>⭐ Evaluar (100 pts Máx)</h3>
+<p style="font-size:11px;color:#94a3b8">10 preguntas de 10 = 100 puntos. Excelente = 100. Preguntas 6 y 12 son solo texto, no suman.</p>
+<select id="eval_emp" class="input"></select>
+<div id="eval_preguntas"></div>
+<div id="total-preview" class="total-box" style="display:none"><div style="font-size:14px">TOTAL ACTUAL</div><div id="total-num" style="font-size:48px;font-weight:800">0</div><div id="total-nivel" style="font-size:14px">/ 100</div></div>
+<button id="btn-eval" class="btn" style="width:100%;padding:14px;background:#10b981;margin-top:12px" onclick="evaluar()">💾 Guardar y Notificar a Empleado</button>
+<p id="msg-eval" style="font-size:12px;margin-top:8px"></p>
+</div>
+
+<div class="card"><h3>📚 Historiales Completos (Admin ve todo)</h3><div id="historial-admin"></div></div>
+</div>
+
+<div id="emp-area" style="display:none">
+<div class="card"><h3>🔔 Mis Notificaciones de Evaluación</h3><div id="mis-notifs"></div></div>
+<div class="card"><h3>📊 Mi Historial (Solo lectura)</h3><div id="mi-historial"></div></div>
+<div class="card"><h3>⏰ Mi Check-In</h3><button class="btn" style="background:#f59e0b" onclick="checkin()">Registrar Entrada</button><div id="mi-asis" style="margin-top:8px;font-size:12px"></div></div>
+</div>
+
+</div></div>
+
+<script>
+let USER_ID='';
+const P=[
+ {id:1,txt:"¿Limpieza de botarga?",tipo:"cal"},
+ {id:2,txt:"¿Limpieza de ropa?",tipo:"cal"},
+ {id:3,txt:"¿Limpieza de guantes?",tipo:"cal"},
+ {id:4,txt:"¿Limpieza de zapatos?",tipo:"cal"},
+ {id:5,txt:"¿Baile?",tipo:"cal"},
+ {id:6,txt:"¿Comentario de baile?",tipo:"texto"},
+ {id:7,txt:"¿Actitud?",tipo:"cal"},
+ {id:8,txt:"¿Cumple con políticas y valores de la empresa?",tipo:"cal"},
+ {id:9,txt:"¿Mantiene un ambiente positivo en el trabajo?",tipo:"cal"},
+ {id:10,txt:"¿Disponibilidad para apoyar?",tipo:"cal"},
+ {id:11,txt:"¿Cumplimiento de horarios? (muestra retardos)",tipo:"cal"},
+ {id:12,txt:"¿Área por mejorar?",tipo:"texto"},
+];
+async function api(p,m='GET',b=null){const o={method:m,headers:{'Content-Type':'application/json'}}; if(b)o.body=JSON.stringify(b); const r=await fetch(p,o); if(!r.ok){const e=await r.json(); throw e;} return r.json();}
+async function login(){const u=document.getElementById('u').value; const p=document.getElementById('p').value; try{const d=await api('/api/login','POST',{usuario:u,password:p}); document.getElementById('login').style.display='none'; document.getElementById('app').style.display='block'; USER_ID=u; if(d.rol==='admin'){document.getElementById('admin-area').style.display='block'; cargarTodo();} else{document.getElementById('emp-area').style.display='block'; cargarEmpleado(u);} }catch(e){document.getElementById('msg').innerText=e.detail||'Error';}}
+async function crearSuc(){const id=document.getElementById('suc_id').value; const nombre=document.getElementById('suc_nombre').value; const he=document.getElementById('suc_he').value; await api('/sucursales','POST',{id,nombre,hora_entrada:he}); cargarSucs();}
+async function cargarSucs(){const sucs=await api('/sucursales'); document.getElementById('list-suc').innerHTML=sucs.map(s=>`<span class="badge">${s.id} ${s.nombre}</span>`).join(' '); document.getElementById('check-suc').innerHTML=sucs.map(s=>`<label><input type="checkbox" value="${s.id}" class="chk"> ${s.nombre}</label>`).join('');}
+async function crearEmp(){const id=document.getElementById('emp_id').value; const nombre=document.getElementById('emp_nombre').value; const suc=[...document.querySelectorAll('.chk:checked')].map(c=>c.value); await api('/empleados','POST',{id,nombre,sucursales_ids:suc,horario:{}}); cargarEmps();}
+async function cargarEmps(){const emps=await api('/empleados'); document.getElementById('eval_emp').innerHTML=emps.map(e=>`<option value="${e.id}">${e.id} - ${e.nombre}</option>`).join('');}
+async function cargarTodo(){await cargarSucs(); await cargarEmps(); renderPreguntas(); verHistorialAdmin();}
+function renderPreguntas(){
+ const div=document.getElementById('eval_preguntas');
+ div.innerHTML=P.map(q=>{
+   if(q.tipo==='cal'){
+     return `<div class="preg"><label>${q.id}. ${q.txt} <b style="color:#f59e0b">(0-10 pts)</b></label><select data-id="${q.id}" class="input sel-cal" onchange="calcTotal()"><option value="0">0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option selected>10</option></select></div>`;
+   } else {
+     return `<div class="preg" style="border-color:#6366f1"><label>${q.id}. ${q.txt} <span style="color:#94a3b8">(No suma puntos)</span></label><textarea data-id="${q.id}" class="input" rows="2"></textarea></div>`;
+   }
+ }).join('');
+ calcTotal();
+}
+function calcTotal(){
+ let total=0;
+ document.querySelectorAll('.sel-cal').forEach(s=>{total+=parseInt(s.value||0)});
+ const box=document.getElementById('total-preview'); box.style.display='block';
+ document.getElementById('total-num').innerText=total;
+ let nivel='Necesita Mejorar'; box.className='total-box';
+ if(total===100){nivel='EXCELENTE 🌟 - 100/100'; box.classList.add('excelente');}
+ else if(total>=90) nivel='Muy Bueno';
+ else if(total>=70) nivel='Bueno';
+ document.getElementById('total-nivel').innerText=nivel+' - '+total+'/100';
+}
+async function evaluar(){
+ const eid=document.getElementById('eval_emp').value;
+ const cals={}; document.querySelectorAll('[data-id]').forEach(el=>cals[el.dataset.id]=el.value);
+ try{
+  const r=await api('/evaluaciones','POST',{empleado_id:eid,calificaciones:cals});
+  document.getElementById('msg-eval').innerHTML=`✅ Evaluación guardada: <b>${r.total}/100</b> - ${r.nivel} - Notificación enviada a ${eid}`;
+  verHistorialAdmin();
+ }catch(e){document.getElementById('msg-eval').innerText='❌ '+(e.detail||'Error');}
+}
+async function verHistorialAdmin(){
+ const evals=await api('/evaluaciones');
+ document.getElementById('historial-admin').innerHTML=evals.map(e=>`
+   <div style="background:#0f172a;border-radius:10px;padding:12px;margin-top:8px;border-left:4px solid ${e.total==100?'#f59e0b':'#6366f1'}">
+     <div style="display:flex;justify-content:space-between"><b>${e.empleado_nombre} (${e.empleado_id})</b><b style="color:${e.total==100?'#f59e0b':'#10b981'};font-size:18px">${e.total}/100</b></div>
+     <small>${e.mes} - ${e.nivel} - ${e.fecha}</small>
+     <div style="font-size:11px;margin-top:6px">${Object.entries(e.detalle_calificaciones||{}).map(([k,v])=>`${k}: ${v}`).join(' | ')}</div>
+     ${e.comentario_baile?`<div style="font-size:11px;margin-top:4px;color:#a5b4fc">Baile: ${e.comentario_baile}</div>`:''}
+     ${e.area_mejorar?`<div style="font-size:11px;color:#fca5a5">Mejorar: ${e.area_mejorar}</div>`:''}
+   </div>
+ `).join('') || 'Sin evaluaciones';
+}
+async function cargarEmpleado(id){
+ const hist=await api('/empleado/'+id+'/historial');
+ document.getElementById('mi-historial').innerHTML=hist.map(e=>`
+   <div style="background:#0f172a;border-radius:12px;padding:14px;margin-top:10px;text-align:center;border:2px solid ${e.total==100?'#f59e0b':'#334155'}">
+     <div style="font-size:12px;color:#94a3b8">${e.mes}</div>
+     <div style="font-size:42px;font-weight:800;color:${e.total==100?'#f59e0b':'#10b981'}">${e.total}</div><div style="font-size:14px">/ 100 - ${e.nivel}</div>
+     ${e.total==100?'<div style="margin-top:6px;color:#f59e0b">🌟 ¡EXCELENTE! 100/100 🌟</div>':`<div style="font-size:11px;margin-top:6px">Te faltaron ${100-e.total} pts para el 100</div>`}
+     <div style="text-align:left;font-size:11px;margin-top:10px">${Object.entries(e.detalle_calificaciones||{}).map(([k,v])=>`${k}: ${v}/10`).join('<br>')}</div>
+   </div>
+ `).join('') || 'Sin evaluaciones';
+ const notifs=await api('/alertas/'+id);
+ document.getElementById('mis-notifs').innerHTML=notifs.map(n=>`<div class="notif" style="border-left:4px solid ${n.total==100?'#f59e0b':'#6366f1'}"><b>${n.total||''}/100 ${n.nivel||''}</b><br>${n.mensaje}<br><small>${n.fecha}</small></div>`).join('') || 'Sin notificaciones';
+ const asis=await api('/asistencias/'+id).catch(()=>[]);
+ document.getElementById('mi-asis').innerHTML=(await api('/asistencias/'+id).catch(()=>[])).slice(0,5).map(a=>`${a.fecha_dia} ${a.hora} ${a.retardo_min>0?'(Retardo '+a.retardo_min+' min)':'(A tiempo)'}`).join('<br>') || '';
+}
+async function checkin(){const r=await api('/asistencia/checkin','POST',{empleado_id:USER_ID}); alert(r.retardo_min>0?`Retardo ${r.retardo_min} min`:`A tiempo ${r.hora}`); cargarEmpleado(USER_ID);}
+</script></body></html>
+"""
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def home(): return HTML
