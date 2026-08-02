@@ -318,4 +318,3 @@ def historial_empleado(empleado_id: str):
 @app.get("/version")
 def version():
     return {"version": "DEFINITIVA v6 - TODO", "nuevo": "Admin crea preguntas dinamicas + evalua con calificacion/comentario/fotos + empleado ve historial"}
-scheduler.start()
