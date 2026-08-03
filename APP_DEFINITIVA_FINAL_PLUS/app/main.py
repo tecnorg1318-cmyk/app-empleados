@@ -354,6 +354,33 @@ def al(eid: str): return [a for a in alertas_db if a["empleado_id"]==eid][::-1]
 @app.get("/asistencias/{eid}")
 def asis(eid: str): return [a for a in asistencias_db if a["empleado_id"]==eid][::-1]
 
+@app.get("/empleado/{eid}/retardos-mes")
+def retardos_mes(eid: str):
+    # Retardos de entrada y comida de este mes - lo ve empleado y admin
+    mes=datetime.now().strftime("%Y-%m")
+    asist=[a for a in asistencias_db if a["empleado_id"]==eid and a.get("fecha","")==mes]
+    total_entrada=sum([a.get("retardo_entrada",0) for a in asist])
+    total_comida=sum([a.get("retardo_comida",0) for a in asist])
+    retardos=[]
+    for a in asist:
+        if a.get("retardo_entrada",0)>0 or a.get("retardo_comida",0)>0:
+            retardos.append({"fecha_dia":a.get("fecha_dia"),"entrada":a.get("entrada"),"retardo_entrada":a.get("retardo_entrada",0),"salida_comida":a.get("salida_comida"),"regreso_comida":a.get("regreso_comida"),"min_comida":a.get("min_comida",0),"tiempo_permitido":a.get("tiempo_permitido",120),"retardo_comida":a.get("retardo_comida",0),"horas":a.get("horas_trabajadas",0)})
+    return {"empleado_id":eid,"mes":mes,"total_retardo_entrada":round(total_entrada,1),"total_retardo_comida":round(total_comida,1),"total_retardos":round(total_entrada+total_comida,1),"detalles":retardos,"asistencias":asist}
+
+@app.get("/admin/retardos-todos")
+def retardos_todos():
+    # Admin ve retardos de todos - solo admin
+    mes=datetime.now().strftime("%Y-%m")
+    result=[]
+    for eid, emp in empleados_db.items():
+        asist=[a for a in asistencias_db if a["empleado_id"]==eid and a.get("fecha","")==mes]
+        total_e=sum([a.get("retardo_entrada",0) for a in asist])
+        total_c=sum([a.get("retardo_comida",0) for a in asist])
+        if total_e>0 or total_c>0 or len(asist)>0:
+            result.append({"empleado_id":eid,"nombre":emp.get("nombre"),"total_entrada":round(total_e,1),"total_comida":round(total_c,1),"total":round(total_e+total_c,1),"dias_trabajados":len(asist)})
+    return sorted(result, key=lambda x: x["total"], reverse=True)
+
+
 HTML = """
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Control GPS Geocerca 2h</title>
@@ -399,8 +426,9 @@ body{background:#0f172a;color:#e2e8f0}
 </div>
 
 <div class="card"><h3>📋 Empleados - Editar TODO + GPS</h3><div id="tabla-emp"></div></div>
-<div class="card" style="border:2px solid #ef4444"><h3>🚨 Alertas GPS - Fuera de sucursal (60 días / 2 meses, se borra automático)</h3><div id="gps-alertas"></div><button class="btn" style="background:#334155;margin-top:8px" onclick="cargarGPSAlertas()">🔄 Actualizar alertas GPS</button></div>
-<div class="card" style="border:2px solid #10b981"><h3>🗺️ Ruta GPS Últimos 60 Días / 2 Meses - Se borra automático + Guardar en Drive</h3>
+<div class="card" style="border:2px solid #f59e0b"><h3>⏱️ Retardos de Todos - Este Mes (Admin ve todos, empleado solo ve los suyos)</h3><p style="font-size:11px;color:#94a3b8">Entrada y comida. Se calcula automático cada día.</p><div id="retardos-admin" style="margin-top:8px"></div><button class="btn" style="background:#334155;margin-top:8px" onclick="cargarRetardosAdmin()">🔄 Actualizar Retardos</button></div>
+<div class="card" style="border:2px solid #ef4444"><h3>🚨 Alertas GPS - Fuera de sucursal (60 días / 2 meses, se borra automático) - Solo Admin</h3><div id="gps-alertas"></div><button class="btn" style="background:#334155;margin-top:8px" onclick="cargarGPSAlertas()">🔄 Actualizar alertas GPS</button></div>
+<div class="card" style="border:2px solid #10b981"><h3>🗺️ Ruta GPS Últimos 60 Días / 2 Meses - SOLO ADMIN VE RUTA - Se borra automático + Guardar en Drive</h3>
 <p style="font-size:11px;color:#94a3b8">Guarda 60 días (2 meses). Al día 61 borra el día 1 automático. Puedes exportar a CSV y guardar en Google Drive en carpeta "Rutas GPS"</p>
 <select id="ruta_emp" class="input"></select>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px"><button class="btn" style="background:#10b981" onclick="verRuta()">🗺️ Ver Ruta 60 Días</button><button class="btn" style="background:#6366f1" onclick="verRutaTodos()">👁️ Ver Todos</button><button class="btn" style="background:#f59e0b" onclick="exportarDrive()">💾 Guardar en Drive</button></div>
@@ -425,10 +453,15 @@ body{background:#0f172a;color:#e2e8f0}
 <button id="btn-accion" class="btn" style="font-size:18px;padding:18px;margin-top:14px" onclick="registrar()">📍 Registrar ENTRADA</button>
 <p id="msg-check" style="font-size:12px;margin-top:8px;text-align:center;color:#10b981"></p>
 <div style="margin-top:12px;background:#0f172a;border-radius:10px;padding:10px;font-size:12px"><b>Resumen hoy:</b><br><span id="resumen-hoy">Sin registros</span></div>
-<div id="mapa" style="margin-top:12px;background:#0f172a;border-radius:10px;padding:10px;font-size:11px;display:none"><b>Logs GPS hoy:</b><div id="gps-logs"></div></div>
+</div>
+<div class="card" style="border:2px solid #f59e0b"><h3>⏱️ Mis Retardos (Entrada y Comida) - Este Mes</h3>
+<p style="font-size:11px;color:#94a3b8">Aquí ves todos tus retardos. Solo tú y el admin pueden ver esto.</p>
+<div id="mis-retardos" style="margin-top:8px"></div>
+<div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="background:#ef444415;border:1px solid #ef4444;border-radius:8px;padding:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:#ef4444" id="total-retardo-entrada">0 min</div><small>Retardo Entrada total mes</small></div><div style="background:#f59e0b15;border:1px solid #f59e0b;border-radius:8px;padding:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:#f59e0b" id="total-retardo-comida">0 min</div><small>Retardo Comida total mes</small></div></div>
 </div>
 <div class="card"><h3>Mis Notificaciones</h3><div id="mis-notifs"></div></div>
-<div class="card"><h3>Mi Historial</h3><div id="mi-historial"></div></div>
+<div class="card"><h3>Mi Historial 100 pts</h3><div id="mi-historial"></div></div>
+<p style="font-size:11px;color:#64748b;text-align:center;margin-top:10px">🔒 Tu ruta GPS solo la ve el admin, tú solo ves tus retardos y tu jornada</p>
 </div>
 </div></div>
 
@@ -480,7 +513,17 @@ function cerrarModal(){document.getElementById('modal-edit').style.display='none
 async function guardarEdicion(){const data={nombre:document.getElementById('edit_nombre').value,puesto:document.getElementById('edit_puesto').value,password:document.getElementById('edit_password').value,telefono:document.getElementById('edit_telefono').value,tiempo_comida:parseInt(document.getElementById('edit_comida').value)||120,activo:document.getElementById('edit_activo').value==='true'}; await api('/empleados/'+EDITANDO_ID,'PUT',data); alert('✅ Guardado - '+data.tiempo_comida+' min'); cerrarModal(); cargarEmps();}
 async function eliminarEmpleado(){if(!confirm('¿Eliminar '+EDITANDO_ID+'?')) return; await fetch('/empleados/'+EDITANDO_ID,{method:'DELETE'}); cerrarModal(); cargarEmps();}
 async function toggleEmp(id){await api('/empleados/'+id+'/toggle','PUT'); cargarEmps();}
-async function cargarTodo(){await cargarSucs(); await generarID(); await cargarEmps(); renderPreguntas(); verHistorialAdmin();}
+async function cargarTodo(){await cargarSucs(); await generarID(); await cargarEmps(); renderPreguntas(); verHistorialAdmin(); cargarRetardosAdmin(); cargarGPSAlertas();}
+async function cargarRetardosAdmin(){
+ try{
+  const data=await api('/admin/retardos-todos');
+  document.getElementById('retardos-admin').innerHTML=data.map(r=>`<div style="background:#0f172a;padding:10px;border-radius:8px;margin-top:6px;display:flex;justify-content:space-between;align-items:center;border-left:4px solid ${r.total>0?'#ef4444':'#10b981'}"><div style="font-size:12px"><b style="color:#10b981">${r.empleado_id}</b> - <b>${r.nombre}</b><br>Entrada: <span style="color:${r.total_entrada>0?'#ef4444':'#10b981'}">${r.total_entrada} min</span> | Comida: <span style="color:${r.total_comida>0?'#f59e0b':'#10b981'}">${r.total_comida} min</span> | Total: <b style="color:#ef4444">${r.total} min</b> | Días: ${r.dias_trabajados}</div><button onclick="verRetardosDetalle('${r.empleado_id}')" style="padding:6px 10px;border-radius:6px;border:none;background:#f59e0b;color:white;font-size:11px">Ver Detalle</button></div>`).join('') || 'Sin asistencias este mes';
+ }catch(e){document.getElementById('retardos-admin').innerText='Error: '+e.message;}
+}
+async function verRetardosDetalle(eid){
+ const data=await api('/empleado/'+eid+'/retardos-mes');
+ alert(`Retardos ${eid} - ${data.mes}\nEntrada total: ${data.total_retardo_entrada} min\nComida total: ${data.total_retardo_comida} min\nTotal: ${data.total_retardos} min\n\nDetalles:\n`+data.detalles.map(d=>`${d.fecha_dia}: Entrada +${d.retardo_entrada} min, Comida +${d.retardo_comida} min`).join('\n'));
+}
 function renderPreguntas(){const div=document.getElementById('eval_preguntas'); div.innerHTML=PREG.map(q=>{if(q.tipo==='cal') return `<div style="background:#0f172a;padding:10px;border-radius:8px;margin-top:8px"><label>${q.id}. ${q.txt}</label><select data-id="${q.id}" class="input sel-cal" onchange="calcTotal()"><option value="0">0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option selected>10</option></select></div>`; else return `<div style="background:#0f172a;padding:10px;border-radius:8px;margin-top:8px"><label>${q.id}. ${q.txt}</label><textarea data-id="${q.id}" class="input" rows="2"></textarea></div>`;}).join(''); calcTotal();}
 function calcTotal(){let t=0; document.querySelectorAll('.sel-cal').forEach(s=>t+=parseInt(s.value||0)); const b=document.getElementById('total-preview'); b.style.display='block'; document.getElementById('total-num').innerText=t+'/100';}
 async function evaluar(){const eid=document.getElementById('eval_emp').value; const cals={}; document.querySelectorAll('[data-id]').forEach(el=>cals[el.dataset.id]=el.value); try{const r=await api('/evaluaciones','POST',{empleado_id:eid,calificaciones:cals}); document.getElementById('msg-eval').innerText=`✅ ${r.total}/100`; verHistorialAdmin();}catch(e){document.getElementById('msg-eval').innerText='❌ '+(e.detail||'Error');}}
@@ -501,9 +544,11 @@ async function cargarEmpleado(){
   document.getElementById('mi-historial').innerHTML=hist.map(e=>`<div style="background:#0f172a;padding:10px;border-radius:8px;margin-top:6px;text-align:center"><div style="font-size:28px;font-weight:800;color:${e.total==100?'#f59e0b':'#10b981'}">${e.total}/100</div></div>`).join('') || 'Sin';
   const notifs=await api('/alertas/'+USER_ID);
   document.getElementById('mis-notifs').innerHTML=notifs.map(n=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin-top:6px">${n.mensaje}<br><small>${n.fecha}</small></div>`).join('') || 'Sin';
-  const logs=await api('/gps/logs/'+USER_ID).catch(()=>[]);
-  if(logs.length){document.getElementById('mapa').style.display='block'; document.getElementById('gps-logs').innerHTML=logs.slice(0,5).map(l=>`${l.fecha} - ${l.distancia?Math.round(l.distancia)+'m':''} ${l.dentro?'✅': '❌'} - <a href="https://www.google.com/maps?q=${l.lat},${l.lng}" target="_blank" style="color:#60a5fa">Maps</a>`).join('<br>');}
-  // auto activar/desactivar GPS segun estado
+  // Cargar retardos mes - empleado ve sus retardos
+  const retardos=await api('/empleado/'+USER_ID+'/retardos-mes');
+  document.getElementById('total-retardo-entrada').innerText=retardos.total_retardo_entrada+' min';
+  document.getElementById('total-retardo-comida').innerText=retardos.total_retardo_comida+' min';
+  document.getElementById('mis-retardos').innerHTML=retardos.detalles.map(r=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin-top:6px;font-size:11px;border-left:3px solid ${r.retardo_entrada>0||r.retardo_comida>0?'#ef4444':'#10b981'}"><b>${r.fecha_dia}</b><br>Entrada: ${r.entrada||'--'} ${r.retardo_entrada>0?`<span style="color:#ef4444">⚠️ +${r.retardo_entrada} min retardo</span>`:'<span style="color:#10b981">✅ A tiempo</span>'}<br>Comida: ${r.salida_comida||'--'} → ${r.regreso_comida||'--'} (${r.min_comida||0}/${r.tiempo_permitido} min) ${r.retardo_comida>0?`<span style="color:#ef4444">⚠️ +${r.retardo_comida} min</span>`:'<span style="color:#10b981">✅</span>'}</div>`).join('') || '<small>Sin retardos este mes ✅</small>';
   if(hoy.gps_activo){activarGPS();} else {desactivarGPS();}
  }catch(e){console.log(e)}
 }
