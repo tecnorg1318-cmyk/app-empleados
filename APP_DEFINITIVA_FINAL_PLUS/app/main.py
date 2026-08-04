@@ -54,7 +54,6 @@ def limpiar_gps_antiguo():
     gps_logs_db[:] = [g for g in gps_logs_db if es_reciente(g.get("fecha",""))]; alertas_db[:] = [a for a in alertas_db if a.get("tipo")!="gps_fuera" or es_reciente(a.get("fecha",""))]
 
 
-
 @app.put("/api/empresa-info")
 def actualizar_empresa(data: dict):
     if "info" not in empresa_db:
@@ -824,9 +823,6 @@ async function cargarPerfilEmpresa(){
    document.getElementById('perf_color').value=info.color||'#6366f1';
    document.getElementById('perf_logo').value=info.logo||'';
    document.getElementById('perf_preview').innerHTML=`<div style="background:${info.color||'#6366f1'};color:white;padding:12px;border-radius:12px"><b>${info.empresa}</b><br><small>${info.slogan||''}</small><br><small>${info.direccion}</small></div>`;
-   // Update hero color
-   const hero=document.querySelector('.hero');
-   if(hero && info.color){ hero.style.background=`linear-gradient(135deg,${info.color},#8b5cf6 50%,#ec4899 100%)`; }
   }
  }catch(e){}
 }
@@ -844,14 +840,12 @@ async function guardarPerfilEmpresa(){
  };
  try{
   await api('/api/empresa-info','PUT',data);
-  document.getElementById('msg-perf').innerText='✅ Perfil guardado - Se actualizará en PDFs y login';
+  document.getElementById('msg-perf').innerText='✅ Perfil guardado';
   cargarPerfilEmpresa();
-  cargarEmpresaInfoLogin();
  }catch(e){document.getElementById('msg-perf').innerText='❌ '+(e.detail||'Error');}
 }
 
 function mostrarRegistro(){document.getElementById('login').style.display='none';document.getElementById('registro-empresa-modal').style.display='flex';}
-
 function mostrarLogin(){document.getElementById('registro-empresa-modal').style.display='none';document.getElementById('login').style.display='flex'; cargarEmpresaInfoLogin();}
 async function cargarEmpresaInfoLogin(){
  try{
