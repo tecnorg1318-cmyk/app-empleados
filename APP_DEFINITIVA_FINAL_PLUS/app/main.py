@@ -1,4 +1,4 @@
- from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
@@ -648,10 +648,66 @@ body{background:#0f172a;color:white;min-height:100vh}
 <div id="modal-edit-suc" class="modal"><div class="modal-content"><h3>✏️ Editar Sucursal</h3><input id="edit_suc_id" class="input" readonly><input id="edit_suc_nombre" class="input" placeholder="Nombre"><input id="edit_suc_dir" class="input" placeholder="Dirección"><div class="grid2"><input id="edit_suc_he" class="input" type="time"><input id="edit_suc_hs" class="input" type="time"></div><div class="grid2"><input id="edit_suc_lat" class="input" placeholder="Lat"><input id="edit_suc_lng" class="input" placeholder="Lng"></div><div style="display:flex;gap:8px;align-items:center;margin-top:8px"><label style="font-size:12px">Radio:</label><input id="edit_suc_radio" class="input" type="number" style="margin-top:0"><span>m</span></div><button class="btn btn-success" onclick="guardarEdicionSuc()">💾 Guardar Sucursal</button><button class="btn btn-dark" onclick="document.getElementById('modal-edit-suc').style.display='none'">Cancelar</button><button class="btn btn-danger" onclick="eliminarSucursal()">🗑️ Eliminar</button></div></div>
 
 <script>
-let USER_ID=''; let EDITANDO_ID=''; let EDITANDO_SUC_ID=''; let watchId=null; let gpsActivo=false; let miPos={lat:null,lng:null}; let firmaData=null; let firmaEmpData=null; let chartRet=null; let chartHoras=null;
+let USER_ID='';
+
+// === SESION PERSISTENTE - NO CERRAR AL ACTUALIZAR ===
+window.addEventListener('DOMContentLoaded', () => {
+  try{
+    const sesion = localStorage.getItem('sesion_activa');
+    const user_id = localStorage.getItem('user_id');
+    const rol = localStorage.getItem('rol');
+    const nombre = localStorage.getItem('nombre');
+    if(sesion==='true' && user_id){
+      USER_ID=user_id;
+      ROL=rol||'empleado';
+      // Mostrar app directo sin login
+      document.getElementById('login').style.display='none';
+      document.getElementById('app').style.display='block';
+      if(ROL==='empleado' || localStorage.getItem('login_rol')==='empleado' || rol==='empleado'){
+        document.getElementById('admin-area').style.display='none';
+        document.getElementById('empleado-area').style.display='block';
+        document.getElementById('bottom-nav-admin').style.display='none';
+        document.getElementById('bottom-nav-emp').style.display='flex';
+        document.getElementById('banner-nombre2').innerText='👋 Hola, '+(nombre||user_id);
+        if(typeof cargarTodoEmpleado === 'function') cargarTodoEmpleado();
+        else if(typeof cargarTodo === 'function') cargarTodo();
+      } else {
+        document.getElementById('admin-area').style.display='block';
+        document.getElementById('empleado-area').style.display='none';
+        document.getElementById('bottom-nav-admin').style.display='flex';
+        document.getElementById('bottom-nav-emp').style.display='none';
+        document.getElementById('banner-nombre').innerText='👋 Hola, '+(nombre||user_id);
+        if(typeof cargarTodo === 'function') cargarTodo();
+      }
+      console.log('✅ Sesión restaurada:', user_id, rol);
+    }
+  }catch(e){ console.log('Error restaurar sesión', e); }
+});
+function guardarSesion(usuario, rol, nombre){
+  try{
+    localStorage.setItem('sesion_activa','true');
+    localStorage.setItem('user_id',usuario);
+    localStorage.setItem('rol',rol);
+    localStorage.setItem('nombre',nombre||usuario);
+    localStorage.setItem('login_rol',rol);
+  }catch(e){}
+}
+function logout(){
+  if(confirm('¿Cerrar sesión? Se borrará la sesión guardada')){
+    try{
+      localStorage.removeItem('sesion_activa');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('rol');
+      localStorage.removeItem('nombre');
+    }catch(e){}
+    location.reload();
+  }
+}
+ let EDITANDO_ID=''; let EDITANDO_SUC_ID=''; let watchId=null; let gpsActivo=false; let miPos={lat:null,lng:null}; let firmaData=null; let firmaEmpData=null; let chartRet=null; let chartHoras=null;
 const PREG=[{id:1,txt:"¿Limpieza de botarga? (1-10)",tipo:"cal"},{id:2,txt:"¿Limpieza de ropa? (1-10)",tipo:"cal"},{id:3,txt:"¿Limpieza de guantes? (1-10)",tipo:"cal"},{id:4,txt:"¿Limpieza de zapatos? (1-10)",tipo:"cal"},{id:5,txt:"¿Baile? (1-10)",tipo:"cal"},{id:6,txt:"¿Comentario de baile? (texto)",tipo:"texto"},{id:7,txt:"¿Actitud? (1-10)",tipo:"cal"},{id:8,txt:"¿Cumple con políticas? (1-10)",tipo:"cal"},{id:9,txt:"¿Ambiente positivo? (1-10)",tipo:"cal"},{id:10,txt:"¿Disponibilidad? (1-10)",tipo:"cal"},{id:11,txt:"¿Cumple horarios? (1-10)",tipo:"cal"},{id:12,txt:"¿Área por mejorar? (texto)",tipo:"texto"},];
 async function api(p,m='GET',b=null){const o={method:m,headers:{'Content-Type':'application/json'}}; if(b)o.body=JSON.stringify(b); const r=await fetch(p,o); if(!r.ok){const e=await r.json(); throw e;} return r.json();}
-async function login(){const u=document.getElementById('u').value; const p=document.getElementById('p').value; try{const d=await api('/api/login','POST',{usuario:u,password:p}); document.getElementById('login').style.display='none'; document.getElementById('app').style.display='block'; USER_ID=u; window.USER_ROL=d.subrol||d.rol; if(d.rol==='admin'){document.getElementById('admin-area').style.display='block'; cargarTodo();} else{document.getElementById('emp-area').style.display='block'; cargarEmpleado();} }catch(e){document.getElementById('msg').innerText=e.detail||'Error';}}
+async function login(){const u=document.getElementById('u').value; const p=document.getElementById('p').value; try{const d=await api('/api/login','POST',{usuario:u,password:p});
+    try{ guardarSesion(d.usuario||u, d.subrol||d.rol||'empleado', d.nombre||u); }catch(e){} document.getElementById('login').style.display='none'; document.getElementById('app').style.display='block'; USER_ID=u; window.USER_ROL=d.subrol||d.rol; if(d.rol==='admin'){document.getElementById('admin-area').style.display='block'; cargarTodo();} else{document.getElementById('emp-area').style.display='block'; cargarEmpleado();} }catch(e){document.getElementById('msg').innerText=e.detail||'Error';}}
 function mostrarRecuperar(){document.getElementById('modal-recuperar').style.display='flex';}
 async function recuperarPass(){const id=document.getElementById('rec_id').value; if(!id) return alert('ID'); try{const r=await api('/api/recuperar-password','POST',{empleado_id:id}); document.getElementById('rec-msg').innerHTML=`✅ Nueva: <b style="color:#10b981;font-size:18px">${r.nueva_password}</b><br>${r.mensaje}`;}catch(e){document.getElementById('rec-msg').innerText='❌ '+(e.detail||'Error');}}
 async function generarID(){const d=await api('/empleados/next-id'); document.getElementById('emp_id').value=d.next_id; document.getElementById('next-id').innerText=d.next_id;}
