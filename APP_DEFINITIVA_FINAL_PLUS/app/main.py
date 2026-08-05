@@ -493,6 +493,20 @@ body{background:#e7e3dc}
 .divider{height:1px;background:#eee;margin:16px 0}
 .dot{width:12px;height:12px;border-radius:50%;background:#00d46a;box-shadow:0 0 0 5px rgba(0,212,106,.2)}
 .card{background:#fff;border-radius:20px;padding:16px;margin-top:12px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+
+#login, .login-box, .login{
+  position:fixed !important;
+  inset:0 !important;
+  z-index:9999 !important;
+  background:#f5f5f0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:16px !important;
+  overflow:auto !important;
+}
+#app{display:none;}
+
 </style></head><body><div id="map"><div style="position:absolute;top:35%;left:45%"><div class="dot"></div></div></div>
 
 <div id="login" class="login-box">
@@ -972,8 +986,8 @@ window.addEventListener('DOMContentLoaded',()=>{
       const loginEl=document.getElementById('login');
       const appEl=document.getElementById('app');
       if(loginEl && appEl){
-        loginEl.style.display='none';
-        appEl.style.display='block';
+        loginEl.style.setProperty('display','none','important');
+        appEl.style.setProperty('display','block','important');
         if(rol==='empleado'){
           const adminArea=document.getElementById('admin-area'); if(adminArea) adminArea.style.display='none';
           const empArea=document.getElementById('empleado-area'); if(empArea) empArea.style.display='block';
@@ -994,13 +1008,13 @@ window.addEventListener('DOMContentLoaded',()=>{
     } else {
       // No hay sesión válida, asegurarse que login esté visible
       console.log('No hay sesión válida, mostrando login');
-      const loginEl=document.getElementById('login'); if(loginEl) loginEl.style.display='flex';
+      const loginEl=document.getElementById('login'); if(loginEl){ loginEl.style.setProperty('display','flex','important'); }
       const appEl=document.getElementById('app'); if(appEl) appEl.style.display='none';
     }
   }catch(e){
     console.log('Error restaurar sesión', e);
     // En caso de error, mostrar login
-    const loginEl=document.getElementById('login'); if(loginEl) loginEl.style.display='flex';
+    const loginEl=document.getElementById('login'); if(loginEl){ loginEl.style.setProperty('display','flex','important'); }
     const appEl=document.getElementById('app'); if(appEl) appEl.style.display='none';
   }
 });
@@ -1014,4 +1028,3 @@ function logout(){if(confirm('¿Cerrar sesión?')){localStorage.removeItem('sesi
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def home(): return HTML
-
