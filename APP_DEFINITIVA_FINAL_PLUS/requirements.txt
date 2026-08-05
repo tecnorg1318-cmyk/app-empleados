@@ -1,7 +1,5 @@
 fastapi
 uvicorn
-apscheduler
-requests
-python-dotenv
-openpyxl
+sqlalchemy
+psycopg2-binary
 python-multipart
