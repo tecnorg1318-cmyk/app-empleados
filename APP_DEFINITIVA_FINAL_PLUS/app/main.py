@@ -671,7 +671,7 @@ let USER_ID=''; let EDITANDO_ID=''; let EDITANDO_SUC_ID=''; let watchId=null; le
 const PREG=[{id:1,txt:"¿Limpieza de botarga? (1-10)",tipo:"cal"},{id:2,txt:"¿Limpieza de ropa? (1-10)",tipo:"cal"},{id:3,txt:"¿Limpieza de guantes? (1-10)",tipo:"cal"},{id:4,txt:"¿Limpieza de zapatos? (1-10)",tipo:"cal"},{id:5,txt:"¿Baile? (1-10)",tipo:"cal"},{id:6,txt:"¿Comentario de baile? (texto)",tipo:"texto"},{id:7,txt:"¿Actitud? (1-10)",tipo:"cal"},{id:8,txt:"¿Cumple con políticas? (1-10)",tipo:"cal"},{id:9,txt:"¿Ambiente positivo? (1-10)",tipo:"cal"},{id:10,txt:"¿Disponibilidad? (1-10)",tipo:"cal"},{id:11,txt:"¿Cumple horarios? (1-10)",tipo:"cal"},{id:12,txt:"¿Área por mejorar? (texto)",tipo:"texto"},];
 async function api(p,m='GET',b=null){const o={method:m,headers:{'Content-Type':'application/json'}}; if(b)o.body=JSON.stringify(b); const r=await fetch(p,o); if(!r.ok){const e=await r.json(); throw e;} return r.json();}
 async function login(){const u=document.getElementById('u').value; const p=document.getElementById('p').value; try{const d=await api('/api/login','POST',{usuario:u,password:p});
-    try{ guardarSesion(d.usuario||u, d.subrol||d.rol||'empleado', d.nombre||u); }catch(e){} document.getElementById('login').style.display='none'; document.getElementById('app').style.display='block'; USER_ID=u; window.USER_ROL=d.subrol||d.rol; if(d.rol==='admin'){document.getElementById('admin-area').style.display='block'; cargarTodo();} else{document.getElementById('emp-area').style.display='block'; cargarEmpleado();} }catch(e){document.getElementById('msg').innerText=e.detail||'Error';}}
+    try{ guardarSesion(d.usuario||u, d.subrol||d.rol||'empleado', d.nombre||u); }catch(e){} document.getElementById('login').style.setProperty('display','none','important'); document.getElementById('app').style.setProperty('display','block','important'); USER_ID=u; window.USER_ROL=d.subrol||d.rol; if(d.rol==='admin'){document.getElementById('admin-area').style.display='block'; cargarTodo();} else{document.getElementById('emp-area').style.display='block'; cargarEmpleado();} }catch(e){document.getElementById('msg').innerText=e.detail||'Error';}}
 function mostrarRecuperar(){document.getElementById('modal-recuperar').style.display='flex';}
 async function recuperarPass(){const id=document.getElementById('rec_id').value; if(!id) return alert('ID'); try{const r=await api('/api/recuperar-password','POST',{empleado_id:id}); document.getElementById('rec-msg').innerHTML=`✅ Nueva: <b style="color:#10b981;font-size:18px">${r.nueva_password}</b><br>${r.mensaje}`;}catch(e){document.getElementById('rec-msg').innerText='❌ '+(e.detail||'Error');}}
 async function generarID(){const d=await api('/empleados/next-id'); document.getElementById('emp_id').value=d.next_id; document.getElementById('next-id').innerText=d.next_id;}
@@ -1021,6 +1021,44 @@ window.addEventListener('DOMContentLoaded',()=>{
 function guardarSesion(u,r,n){try{localStorage.setItem('sesion_activa','true');localStorage.setItem('user_id',u);localStorage.setItem('rol',r);localStorage.setItem('nombre',n||u);console.log('Sesión guardada:',u,r);}catch(e){}}
 function logout(){if(confirm('¿Cerrar sesión?')){localStorage.removeItem('sesion_activa');localStorage.removeItem('user_id');localStorage.removeItem('rol');localStorage.removeItem('nombre');location.reload();}}
 </script>
+
+
+// FIX PARA QUE EL LOGIN SÍ DEJE ENTRAR
+const originalLogin = login;
+async function login(){
+  const u=document.getElementById('u').value.trim();
+  const p=document.getElementById('p').value.trim();
+  if(!u || !p){ alert('Escribe usuario y contraseña\n\nPrueba: admin / admin123'); return; }
+  try{
+    const d=await api('/api/login','POST',{usuario:u,password:p});
+    try{ guardarSesion(d.usuario||u, d.subrol||d.rol||'empleado', d.nombre||u); }catch(e){}
+    const loginEl=document.getElementById('login');
+    const appEl=document.getElementById('app');
+    if(loginEl) loginEl.style.setProperty('display','none','important');
+    if(appEl) appEl.style.setProperty('display','block','important');
+    USER_ID=d.usuario||u;
+    window.USER_ROL=d.subrol||d.rol;
+    if(d.rol==='admin'){
+      document.getElementById('admin-area').style.display='block';
+      document.getElementById('empleado-area').style.display='none';
+      const navAdmin=document.getElementById('bottom-nav-admin'); if(navAdmin) navAdmin.style.display='flex';
+      const navEmp=document.getElementById('bottom-nav-emp'); if(navEmp) navEmp.style.display='none';
+      if(typeof cargarTodo==='function') cargarTodo();
+    } else {
+      document.getElementById('admin-area').style.display='none';
+      const empArea=document.getElementById('empleado-area'); if(empArea) empArea.style.display='block';
+      else { const empArea2=document.getElementById('emp-area'); if(empArea2) empArea2.style.display='block'; }
+      const navAdmin=document.getElementById('bottom-nav-admin'); if(navAdmin) navAdmin.style.display='none';
+      const navEmp=document.getElementById('bottom-nav-emp'); if(navEmp) navEmp.style.display='flex';
+      if(typeof cargarEmpleado==='function') cargarEmpleado();
+      else if(typeof cargarTodoEmpleado==='function') cargarTodoEmpleado();
+    }
+  }catch(e){
+    const msgEl=document.getElementById('msg') || document.getElementById('login_msg');
+    if(msgEl) msgEl.innerText='❌ '+(e.detail||'Error - prueba admin / admin123');
+    else alert('❌ '+(e.detail||'Error - prueba admin / admin123'));
+  }
+}
 
 </body></html>
 
