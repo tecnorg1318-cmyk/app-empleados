@@ -7,7 +7,74 @@ import uuid, math, json, os, hashlib, random
 app = FastAPI(title="Control BONITA 100% FINAL")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 DB_FILE = "database.json"
+DB_SQLITE = "clockrd.db"
+DATABASE_URL = os.environ.get("DATABASE_URL", "") # Render PostgreSQL
+
 def hash_pass(p): return hashlib.sha256(p.encode()).hexdigest()[:16]
+
+# === NUEVA CAPA DE BASE DE DATOS PROFESIONAL ===
+import sqlite3
+try:
+    from sqlalchemy import create_engine, Column, String, Text, Boolean, Integer, DateTime, text
+    from sqlalchemy.orm import declarative_base, sessionmaker
+    import sqlalchemy
+    HAS_SQLALCHEMY = True
+except:
+    HAS_SQLALCHEMY = False
+
+def get_db_engine():
+    if DATABASE_URL:
+        # PostgreSQL en Render
+        url = DATABASE_URL
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+        return create_engine(url)
+    else:
+        # SQLite local persistente
+        return create_engine(f"sqlite:///{DB_SQLITE}", connect_args={"check_same_thread": False})
+
+if HAS_SQLALCHEMY:
+    try:
+        engine = get_db_engine()
+        Base = declarative_base()
+        class Empresa(Base):
+            __tablename__ = "empresas"
+            id = Column(String, primary_key=True)
+            nombre_admin = Column(String)
+            usuario = Column(String, unique=True)
+            empresa = Column(String)
+            direccion = Column(String)
+            correo = Column(String)
+            telefono = Column(String)
+            password = Column(String)
+            logo = Column(Text)
+            slogan = Column(String)
+            color = Column(String)
+            created_at = Column(String)
+        
+        class EmpleadoDB(Base):
+            __tablename__ = "empleados"
+            id = Column(String, primary_key=True)
+            empresa_id = Column(String)
+            nombre = Column(String)
+            puesto = Column(String)
+            password = Column(String)
+            data = Column(Text) # JSON con todo lo demás
+        
+        class AsistenciaDB(Base):
+            __tablename__ = "asistencias"
+            id = Column(String, primary_key=True)
+            empleado_id = Column(String)
+            empresa_id = Column(String)
+            fecha = Column(String)
+            data = Column(Text)
+
+        Base.metadata.create_all(engine)
+        print(f"✅ Base de datos lista: {DATABASE_URL[:20] if DATABASE_URL else DB_SQLITE}")
+    except Exception as e:
+        print(f"⚠️ Error DB: {e}")
+        HAS_SQLALCHEMY = False
+
 admins_db = {
     "admin": {"password": hash_pass("admin123"), "rol": "superadmin", "nombre": "Admin Principal"},
     "gerente": {"password": hash_pass("gerente123"), "rol": "gerente", "nombre": "Gerente Sucursal"},
@@ -56,6 +123,38 @@ def limpiar_gps_antiguo():
         except: return True
     gps_logs_db[:] = [g for g in gps_logs_db if es_reciente(g.get("fecha",""))]; alertas_db[:] = [a for a in alertas_db if a.get("tipo")!="gps_fuera" or es_reciente(a.get("fecha",""))]
 
+
+@app.get("/api/db-status")
+def db_status():
+    tipo = "PostgreSQL" if DATABASE_URL else "SQLite" if HAS_SQLALCHEMY else "JSON"
+    return {
+        "tipo": tipo,
+        "url": DATABASE_URL[:30]+"..." if DATABASE_URL else DB_SQLITE,
+        "sqlite_existe": os.path.exists(DB_SQLITE),
+        "json_existe": os.path.exists(DB_FILE),
+        "empleados": len(empleados_db),
+        "empresas": len(empresa_db) if isinstance(empresa_db, dict) else 1,
+        "mensaje": "Base de datos conectada ✅" if tipo!="JSON" else "Usando JSON temporal ⚠️ - Crea PostgreSQL en Render"
+    }
+
+@app.post("/api/migrar-a-db")
+def migrar_a_db():
+    if not HAS_SQLALCHEMY:
+        raise HTTPException(400, "SQLAlchemy no instalado")
+    try:
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        # Migrar empresas y empleados actuales a DB real
+        count=0
+        for eid, emp in empleados_db.items():
+            exists = session.execute(text(f"SELECT id FROM empleados WHERE id='{eid}'")).fetchone()
+            if not exists:
+                session.execute(text(f"INSERT INTO empleados (id, data) VALUES (:id, :data)"), {"id": eid, "data": json.dumps(emp)})
+                count+=1
+        session.commit()
+        return {"ok": True, "migrados": count, "mensaje": f"Migrados {count} empleados a {DB_SQLITE if not DATABASE_URL else 'PostgreSQL'}"}
+    except Exception as e:
+        raise HTTPException(500, f"Error migración: {e}")
 
 @app.put("/api/empresa-info")
 def actualizar_empresa(data: dict):
@@ -1056,3 +1155,4 @@ function logout(){ if(confirm('¿Cerrar sesión?')){ localStorage.clear(); locat
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def home(): return HTML
+
