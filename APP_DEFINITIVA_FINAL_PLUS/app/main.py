@@ -8,12 +8,10 @@ app = FastAPI(title="Control BONITA 100% FINAL")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 DB_FILE = "database.json"
 def hash_pass(p): return hashlib.sha256(p.encode()).hexdigest()[:16]
-
-roles_custom_db = {"empleado": {"nombre": "Empleado", "color": "#64748b", "es_sistema": True}, "admin": {"nombre": "Admin", "color": "#ef4444", "es_sistema": True}}
-creador_info_db = {"nombre": "Ruben Garcia", "version": "PRO MAX 2026"}
-limpieza_config_db = {"ultima_limpieza_gps": "", "ultima_limpieza_general": "", "gps_meses": 3, "general_meses": 5, "historial_sucursales_meses": 8}
 empresa_db = {}
-
+roles_custom_db = {"empleado":{"nombre":"Empleado","color":"#64748b","es_sistema":True}}
+creador_info_db={"nombre":"Ruben Garcia"}
+limpieza_config_db={"gps_meses":3,"general_meses":5,"historial_sucursales_meses":8}
 admins_db = {
     "admin": {"password": hash_pass("admin123"), "rol": "superadmin", "nombre": "Admin Principal"},
     "gerente": {"password": hash_pass("gerente123"), "rol": "gerente", "nombre": "Gerente Sucursal"},
@@ -430,11 +428,11 @@ def del_rol(rid: str): return {"ok":True}
 @app.get("/api/creador-info")
 def get_creador(): return creador_info_db
 @app.get("/api/terminos-condiciones")
-def get_terminos(): return {"terminos": "Terminos exclusivos Ruben Garcia GPS 3m General 5m Historial 8m"}
+def get_terminos(): return {"terminos": "Terminos exclusivos Ruben Garcia 3M/5M/8M"}
 @app.get("/api/limpieza/status")
-def limpieza_status(): return {"total_registros_actual": 0, "gps_actual": 0, "asistencias_actual": 0, "proxima_limpieza_gps": "3 meses", "proxima_limpieza_general": "5m + 8m historial", "conserva_siempre": ["sucursales","empleados","roles"], "borra_gps_3_meses": ["gps"], "conserva_historial_8_meses": ["visitas"], "borra_general_5_meses": ["asist"], "ultima_limpieza_gps": "Nunca", "ultima_limpieza_general": "Nunca"}
+def limpieza_status(): return {"total_registros_actual":0,"gps_actual":0,"asistencias_actual":0,"proxima_limpieza_gps":"3 meses","proxima_limpieza_general":"5m+8m","conserva_siempre":["sucursales","empleados","roles"],"borra_gps_3_meses":["gps"],"conserva_historial_8_meses":["visitas"],"borra_general_5_meses":["asist"],"ultima_limpieza_gps":"Nunca","ultima_limpieza_general":"Nunca"}
 @app.post("/api/limpieza/ejecutar")
-def limpieza_ejecutar(d: dict = {}): return {"gps_borrados":0,"asistencias_borradas":0,"espacio_liberado_mb":0}
+def limpieza_ejecutar(d: dict = {}): return {"gps_borrados":0,"espacio_liberado_mb":0}
 @app.post("/api/limpieza/config")
 def guardar_limpieza_config(d: dict): return {"ok":True}
 @app.get("/api/empresas")
@@ -443,7 +441,9 @@ def get_empresas(): return list(empresa_db.values())
 def crear_empresa(d: dict):
     import uuid, datetime
     eid = str(uuid.uuid4())[:8]
-    empresa_db[eid] = {"id":eid, "nombre":d.get("nombre",""), "fecha": datetime.datetime.now().strftime("%Y-%m-%d")}
+    empresa_db[eid] = {"id":eid,"nombre":d.get("nombre",""),"rfc":d.get("rfc",""),"direccion":d.get("direccion",""),"telefono":d.get("telefono",""),"email":d.get("email",""),"logo":d.get("logo",""),"fecha":datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    try: save_db()
+    except: pass
     return empresa_db[eid]
 
 
