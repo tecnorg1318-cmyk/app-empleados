@@ -962,21 +962,49 @@ window.addEventListener('DOMContentLoaded',()=>{
     const ses=localStorage.getItem('sesion_activa');
     const uid=localStorage.getItem('user_id');
     const rol=localStorage.getItem('rol');
-    if(ses==='true' && uid){
-      USER_ID=uid; ROL=rol||'empleado';
-      document.getElementById('login').style.display='none';
-      document.getElementById('app').style.display='block';
-      if(rol==='empleado'){
-        document.getElementById('admin-area').style.display='none';
-        document.getElementById('empleado-area').style.display='block';
-      }else{
-        document.getElementById('admin-area').style.display='block';
-        document.getElementById('empleado-area').style.display='none';
+    const nombre=localStorage.getItem('nombre');
+    console.log('Checking sesion:', ses, uid, rol);
+    // Solo restaurar si hay datos válidos y no es la primera vez
+    if(ses==='true' && uid && uid!=='null' && uid!=='undefined' && uid.length>0){
+      USER_ID=uid; 
+      window.ROL=rol||'empleado';
+      // Verificar que los elementos existan antes de ocultar login
+      const loginEl=document.getElementById('login');
+      const appEl=document.getElementById('app');
+      if(loginEl && appEl){
+        loginEl.style.display='none';
+        appEl.style.display='block';
+        if(rol==='empleado'){
+          const adminArea=document.getElementById('admin-area'); if(adminArea) adminArea.style.display='none';
+          const empArea=document.getElementById('empleado-area'); if(empArea) empArea.style.display='block';
+          const navAdmin=document.getElementById('bottom-nav-admin'); if(navAdmin) navAdmin.style.display='none';
+          const navEmp=document.getElementById('bottom-nav-emp'); if(navEmp) navEmp.style.display='flex';
+          const banner2=document.getElementById('banner-nombre2'); if(banner2) banner2.innerText='👋 Hola, '+(nombre||uid);
+          if(typeof cargarTodoEmpleado==='function') setTimeout(()=>cargarTodoEmpleado(),500);
+        }else{
+          const adminArea=document.getElementById('admin-area'); if(adminArea) adminArea.style.display='block';
+          const empArea=document.getElementById('empleado-area'); if(empArea) empArea.style.display='none';
+          const navAdmin=document.getElementById('bottom-nav-admin'); if(navAdmin) navAdmin.style.display='flex';
+          const navEmp=document.getElementById('bottom-nav-emp'); if(navEmp) navEmp.style.display='none';
+          const banner=document.getElementById('banner-nombre'); if(banner) banner.innerText='👋 Hola, '+(nombre||uid);
+          if(typeof cargarTodo==='function') setTimeout(()=>cargarTodo(),500);
+        }
+        console.log('✅ Sesión restaurada:', uid, rol);
       }
+    } else {
+      // No hay sesión válida, asegurarse que login esté visible
+      console.log('No hay sesión válida, mostrando login');
+      const loginEl=document.getElementById('login'); if(loginEl) loginEl.style.display='flex';
+      const appEl=document.getElementById('app'); if(appEl) appEl.style.display='none';
     }
-  }catch(e){}
+  }catch(e){
+    console.log('Error restaurar sesión', e);
+    // En caso de error, mostrar login
+    const loginEl=document.getElementById('login'); if(loginEl) loginEl.style.display='flex';
+    const appEl=document.getElementById('app'); if(appEl) appEl.style.display='none';
+  }
 });
-function guardarSesion(u,r,n){try{localStorage.setItem('sesion_activa','true');localStorage.setItem('user_id',u);localStorage.setItem('rol',r);localStorage.setItem('nombre',n||u);}catch(e){}}
+function guardarSesion(u,r,n){try{localStorage.setItem('sesion_activa','true');localStorage.setItem('user_id',u);localStorage.setItem('rol',r);localStorage.setItem('nombre',n||u);console.log('Sesión guardada:',u,r);}catch(e){}}
 function logout(){if(confirm('¿Cerrar sesión?')){localStorage.removeItem('sesion_activa');localStorage.removeItem('user_id');localStorage.removeItem('rol');localStorage.removeItem('nombre');location.reload();}}
 </script>
 
@@ -986,3 +1014,4 @@ function logout(){if(confirm('¿Cerrar sesión?')){localStorage.removeItem('sesi
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def home(): return HTML
+
