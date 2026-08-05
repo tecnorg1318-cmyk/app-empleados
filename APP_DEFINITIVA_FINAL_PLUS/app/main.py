@@ -954,68 +954,32 @@ HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport"
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--primary:#6366f1;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--bg:#0a0e1a;--card:#151a2a;--border:#1e293b;--text:#e2e8f0;--muted:#94a3b8}
-body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-/* LOGIN */
-.login-box{max-width:420px;margin:60px auto;background:var(--card);border-radius:24px;padding:32px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.5)}
-.hero{padding:20px;background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);border-radius:20px;margin:12px;text-align:center;color:white}
-.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:18px;margin-top:14px;transition:.25s}
-.card:hover{border-color:#6366f1;transform:translateY(-2px);box-shadow:0 12px 30px rgba(99,102,241,.12)}
-.btn{padding:12px 18px;border-radius:14px;border:none;font-weight:700;cursor:pointer;width:100%;margin-top:10px;transition:.2s;font-size:13px}
-.btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
-.btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white}
-.btn-success{background:linear-gradient(135deg,#10b981,#06b6d4);color:white}
-.btn-warning{background:#f59e0b;color:white}.btn-danger{background:#ef4444;color:white}.btn-dark{background:#0f172a;color:white;border:1px solid #334155}
-.input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #334155;background:#0f172a;color:white;margin-top:8px;font-size:13px}
-.input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.2)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.kpi{background:var(--card);border-radius:18px;padding:18px;text-align:center;border:1px solid var(--border);position:relative;overflow:hidden}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),#ec4899)}
-.kpi b{font-size:26px;display:block}.kpi small{color:var(--muted);font-size:11px}
-.paso{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:14px;margin-top:10px;border-left:4px solid #334155}
-.paso.completo{border-left-color:var(--success);background:rgba(16,185,129,.08)}
-.paso.activo{border-left-color:var(--warning);background:rgba(245,158,11,.08)}
-.gps-on{background:var(--success);color:white;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:800;animation:pulse 1.5s infinite}
-.gps-off{background:#334155;color:white;padding:6px 14px;border-radius:20px;font-size:11px}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
-.modal-content{background:var(--card);border-radius:24px;padding:24px;max-width:520px;width:100%;max-height:92vh;overflow:auto;border:1px solid var(--border)}
-/* NEW LAYOUT */
-.app-layout{display:flex;min-height:100vh}
-.sidebar{width:260px;background:var(--card);border-right:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;overflow-y:auto}
-.sidebar-brand{display:flex;align-items:center;gap:12px;padding:12px 8px;margin-bottom:12px}
-.sidebar-brand .logo{width:44px;height:44px;background:linear-gradient(135deg,#6366f1,#ec4899);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
-.sidebar-item{padding:12px 14px;border-radius:12px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);transition:.2s}
-.sidebar-item:hover{background:#0f172a;color:white}
-.sidebar-item.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;box-shadow:0 4px 12px rgba(99,102,241,.3)}
-.sidebar-section{font-size:10px;font-weight:800;color:#475569;letter-spacing:1px;margin-top:16px;padding:0 10px}
-.main-content{flex:1;padding:20px;max-width:1400px;margin:0 auto;width:100%}
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;backdrop-filter:blur(10px)}
-.tab-content{display:none;animation:fadeIn .3s}
-.tab-content.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-/* BOTTOM NAV MOBILE */
-.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(21,26,42,.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:8px 6px;z-index:90;justify-content:space-around}
-.bottom-nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;border-radius:14px;cursor:pointer;font-size:10px;color:var(--muted);transition:.2s;min-width:56px}
-.bottom-nav-item.active{background:var(--primary);color:white}
-.bottom-nav-item .icon{font-size:20px}
-.badge{background:var(--danger);color:white;font-size:10px;padding:2px 6px;border-radius:10px;position:absolute;top:-4px;right:-4px}
-/* Responsive */
-@media(max-width:900px){
-  .sidebar{display:none}
-  .bottom-nav{display:flex}
-  .main-content{padding:12px;padding-bottom:90px}
-  .grid2,.grid4{grid-template-columns:1fr}
-  .topbar{padding:12px 14px}
-  .topbar h2{font-size:16px}
-  .hero{margin:8px;border-radius:16px;padding:16px}
-}
-@media(min-width:901px){
-  .bottom-nav{display:none !important}
-}
-.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;background:#0f172a;border:1px solid #334155}
+:root{--primary:#6366f1;--primary-dark:#4f46e5;--bg:#f8fafc;--card:#ffffff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;--radius:20px}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+body{background:var(--bg);color:var(--text);padding-bottom:90px}
+.app-header{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px)}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#ec4899);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:16px;object-fit:cover}
+.header-info b{font-size:14px;display:block}.header-info small{font-size:11px;color:var(--muted)}
+.header-right{display:flex;gap:8px}
+.icon-btn{width:36px;height:36px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px}
+.card{background:var(--card);border-radius:20px;padding:16px;margin:12px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card h3{font-size:14px;font-weight:800;margin-bottom:4px}
+.input{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:var(--bg);font-size:13px;margin-top:8px;outline:none}
+.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.btn{width:100%;padding:12px;border-radius:14px;border:none;font-weight:700;font-size:13px;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white}
+.btn-dark{background:var(--text);color:white}.btn-success{background:var(--success);color:white}.btn-danger{background:var(--danger);color:white}.btn-warning{background:var(--warning);color:white}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0 12px;z-index:100}
+.bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9px;font-weight:600;color:var(--muted);cursor:pointer;padding:4px}
+.bottom-nav-item.active{color:var(--primary)}.bottom-nav-item .icon{font-size:20px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:10px}
+.bottom-nav-item.active .icon{background:var(--primary);color:white}
+.tab-content{display:none}.tab-content.active{display:block;animation:fade .2s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(135deg,#6366f1,#ec4899)}
+.login-card{background:var(--card);border-radius:28px;padding:24px;width:100%;max-width:360px;box-shadow:0 20px 40px rgba(0,0,0,.15)}
+.gps-on{color:var(--success);font-weight:800;font-size:12px}.gps-off{color:var(--muted);font-size:12px}
 </style></head><body>
 
 <!-- REGISTRO MODAL -->
@@ -1135,6 +1099,12 @@ Cargando roles...
 <div class="card" style="border:2px solid #8b5cf6"><h3>🔐 Permisos por Rol</h3><div id="permisos-editor"></div><button class="btn btn-primary" onclick="guardarPermisos()">💾 Guardar Permisos</button><button class="btn btn-dark" onclick="cargarPermisos()">🔄 Cargar</button><p id="msg-permisos" style="font-size:11px;margin-top:8px"></p></div>
 </div>
 <div id="tab-reportes" class="tab-content">
+
+<div class="card" style="border:2px solid #6366f1"><h3>📋 Reportes Volanteo - Admin</h3><p style="font-size:11px;color:#94a3b8">Revisa si volantearon en cada sucursal por turno</p>
+<button class="btn btn-dark" onclick="cargarReportesVolanteoAdmin()" style="font-size:11px">🔄 Cargar Reportes Volanteo</button>
+<div id="reportes-vol-admin" style="margin-top:12px;max-height:400px;overflow:auto;background:#0f172a;border-radius:12px;padding:12px"></div>
+</div>
+
 <div class="card"><h3>📈 Productividad por Sucursal</h3><div style="display:flex;gap:8px"><input id="rep_suc_mes" class="input" type="month" style="margin-top:0"><button class="btn btn-warning" onclick="cargarReporteSucursales()" style="width:auto;margin-top:0">📊 Ver</button></div><div id="reporte-suc-result" style="margin-top:12px"></div></div>
 <div class="card"><h3>🎯 Bonos y Metas</h3><p style="font-size:11px;color:var(--muted)">Bono automático si 0 retardos y 20+ días</p><div id="bonos-result" style="margin-top:10px"></div></div>
 <div class="card" style="border:2px solid #ef4444"><h3>🛡️ Anti-Trampa</h3><div id="antitrampa-result"></div><button class="btn btn-danger" onclick="cargarAntiTrampa()">🔍 Escanear</button></div>
@@ -1246,6 +1216,49 @@ Cargando info del creador...
 <button class="btn btn-dark" onclick="logout()" style="margin-top:12px">🚪 Cerrar Sesión desde aquí también</button>
 </div>
 </div>
+
+<div class="card" style="border:2px solid #6366f1;background:linear-gradient(135deg,#1e293b,#6366f115)"><h3>📋 Reporte Diario Sucursal - Volanteo</h3><p style="font-size:11px;color:#94a3b8">El empleado califica si volantearon en su turno</p>
+<select id="rep_sucursal" class="input"><option value="">Seleccionar sucursal...</option></select>
+<div style="background:#0f172a;border-radius:12px;padding:12px;margin-top:10px">
+<b style="font-size:12px">1. ¿En sucursal volantearon en el turno de la mañana?</b>
+<select id="rep_manana" class="input" onchange="toggleManana()">
+<option value="">Seleccionar...</option>
+<option value="si">✅ Sí, sí volantearon</option>
+<option value="no">❌ No volantearon</option>
+</select>
+<div id="rep_manana_detalle" style="display:none;background:#1e293b;border-radius:10px;padding:10px;margin-top:8px">
+<b style="font-size:11px">¿Sabes quién volanteó en la mañana?</b>
+<select id="rep_manana_quien" class="input" onchange="toggleMananaNombre()">
+<option value="">Seleccionar...</option>
+<option value="no_se">🤷 No sé su nombre</option>
+<option value="si_se">📝 Sí, escribir nombre</option>
+</select>
+<input id="rep_manana_nombre" class="input" placeholder="Escribe nombre de quien volanteó..." style="display:none">
+</div>
+</div>
+<div style="background:#0f172a;border-radius:12px;padding:12px;margin-top:10px">
+<b style="font-size:12px">2. ¿Sabes si volantearon en la tarde?</b>
+<select id="rep_tarde" class="input" onchange="toggleTarde()">
+<option value="">Seleccionar...</option>
+<option value="si">✅ Sí, sí volantearon</option>
+<option value="no">❌ No volantearon</option>
+</select>
+<div id="rep_tarde_detalle" style="display:none;background:#1e293b;border-radius:10px;padding:10px;margin-top:8px">
+<b style="font-size:11px">¿Sabes quién volanteó en la tarde?</b>
+<select id="rep_tarde_quien" class="input" onchange="toggleTardeNombre()">
+<option value="">Seleccionar...</option>
+<option value="no_se">🤷 No sé su nombre</option>
+<option value="si_se">📝 Sí, escribir nombre</option>
+</select>
+<input id="rep_tarde_nombre" class="input" placeholder="Escribe nombre de quien volanteó..." style="display:none">
+</div>
+</div>
+<textarea id="rep_comentario" class="input" placeholder="Comentario extra (opcional)..." rows="2"></textarea>
+<button class="btn btn-primary" onclick="enviarReporteVolanteo()">📤 Enviar Reporte Volanteo</button>
+<p id="msg-rep-vol" style="font-size:11px;margin-top:8px;text-align:center"></p>
+<div id="mis-reportes-vol" style="margin-top:12px;max-height:200px;overflow:auto"></div>
+</div>
+
 <div id="tab-emp-chat" class="tab-content">
 <div class="card" style="border:2px solid #0ea5e9"><h3>💬 Chat con Administrador</h3>
 <div id="chat-emp-list" style="margin-top:12px;max-height:300px;overflow:auto;background:#0f172a;border-radius:12px;padding:12px;font-size:11px"></div>
@@ -1422,7 +1435,7 @@ async function subirJustificante(){const fecha=document.getElementById('just_fec
 async function cargarMisJustificantes(){try{const just=await api('/justificantes/'+USER_ID); document.getElementById('mis-justificantes').innerHTML=just.map(j=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin-top:6px;font-size:11px"><b>${j.tipo}</b> ${j.fecha} - ${j.estado}<br>${j.motivo}</div>`).join('')||'Sin';}catch(e){}}
 async function cargarNotifs(){try{const n=await api('/alertas/'+USER_ID); document.getElementById('mis-notifs').innerHTML=n.slice(-5).map(a=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin-top:6px;font-size:11px">${a.mensaje}<br><small>${a.fecha}</small></div>`).join('')||'Sin';}catch(e){}}
 async function cambiarPassword(){const old=document.getElementById('old_pass').value; const nw=document.getElementById('new_pass').value; if(!old||!nw) return alert('Llena ambos'); try{await api('/api/cambiar-password','POST',{empleado_id:USER_ID,old_password:old,new_password:nw}); document.getElementById('msg-pass').innerText='✅ Cambiada';}catch(e){document.getElementById('msg-pass').innerText='❌ '+(e.detail||'Error');}}
-async function cargarEmpleadoPro(){cargarEmpleado(); cargarMiPerfil(); cargarMiCalendario(); cargarMiRanking(); cargarMiHistorialGrafica(); cargarMisNotificacionesEmp();}
+async function cargarEmpleadoPro(){cargarEmpleado(); cargarMiPerfil(); cargarMiCalendario(); cargarMisReportesVolanteo(); cargarMiRanking(); cargarMiHistorialGrafica(); cargarMisNotificacionesEmp();}
 async function cargarMiPerfil(){try{const p=await api('/api/empleado/'+USER_ID+'/perfil'); const emp=p.empleado; if(emp.foto){ document.getElementById('emp_foto_preview').src=emp.foto; document.getElementById('emp_foto_preview').style.display='block'; document.getElementById('topbar-foto').src=emp.foto; document.getElementById('topbar-foto').style.display='block';} document.getElementById('emp-perfil-info').innerHTML=`<b>${emp.nombre}</b> - ${emp.puesto||''} - ${emp.rol||''}<br>📱 ${emp.telefono||''}<br>💰 $${emp.sueldo_hora||50}/h<br>⏰ ${emp.tiempo_comida||120} min comida<br>📍 ${(emp.sucursales_ids||[]).join(', ')}<br>Horas totales: ${p.horas_total}h`; }catch(e){}}
 async function subirFotoPerfil(){const file=document.getElementById('emp_foto_input').files[0]; if(!file) return alert('Foto'); const reader=new FileReader(); reader.onload=async e=>{ const foto=e.target.result; await api('/api/empleado/'+USER_ID+'/foto','POST',{foto:foto}); document.getElementById('emp_foto_preview').src=foto; document.getElementById('emp_foto_preview').style.display='block'; document.getElementById('topbar-foto').src=foto; document.getElementById('topbar-foto').style.display='block'; alert('✅ Foto subida'); }; reader.readAsDataURL(file);}
 async function cargarMiCalendario(){const mes=document.getElementById('emp_cal_mes')?.value || new Date().toISOString().slice(0,7); try{const dias=await api('/api/calendario/'+USER_ID+'/'+mes); document.getElementById('emp-calendario-result').innerHTML=dias.map(d=>`<div style="background:#0f172a;border-left:4px solid ${d.color};border-radius:8px;padding:6px;text-align:center;font-size:10px"><b>${d.dia}</b><br><small style="color:${d.color}">${d.estado}</small></div>`).join('');}catch(e){}}
@@ -1657,6 +1670,71 @@ cargarTodo = async function(){
   cargarCreadorInfo();
   cargarLimpiezaStatus();
 };
+
+
+function toggleManana(){
+ const v=document.getElementById('rep_manana').value;
+ const el=document.getElementById('rep_manana_detalle');
+ if(el) el.style.display = v==='si' ? 'block' : 'none';
+}
+function toggleMananaNombre(){
+ const v=document.getElementById('rep_manana_quien').value;
+ const el=document.getElementById('rep_manana_nombre');
+ if(el) el.style.display = v==='si_se' ? 'block' : 'none';
+}
+function toggleTarde(){
+ const v=document.getElementById('rep_tarde').value;
+ const el=document.getElementById('rep_tarde_detalle');
+ if(el) el.style.display = v==='si' ? 'block' : 'none';
+}
+function toggleTardeNombre(){
+ const v=document.getElementById('rep_tarde_quien').value;
+ const el=document.getElementById('rep_tarde_nombre');
+ if(el) el.style.display = v==='si_se' ? 'block' : 'none';
+}
+async function enviarReporteVolanteo(){
+ const suc=document.getElementById('rep_sucursal').value;
+ const manana=document.getElementById('rep_manana').value;
+ const manana_quien=document.getElementById('rep_manana_quien').value;
+ const manana_nombre=document.getElementById('rep_manana_nombre').value;
+ const tarde=document.getElementById('rep_tarde').value;
+ const tarde_quien=document.getElementById('rep_tarde_quien').value;
+ const tarde_nombre=document.getElementById('rep_tarde_nombre').value;
+ const comentario=document.getElementById('rep_comentario').value;
+ if(!suc) return alert('Selecciona sucursal');
+ if(!manana || !tarde) return alert('Responde las 2 preguntas de mañana y tarde');
+ try{
+  await api('/reportes-volanteo','POST',{empleado_id:USER_ID,sucursal_id:suc,manana_volantearon:manana,manana_quien:manana_quien,manana_nombre:manana_nombre,tarde_volantearon:tarde,tarde_quien:tarde_quien,tarde_nombre:tarde_nombre,comentario:comentario});
+  document.getElementById('msg-rep-vol').innerText='✅ Reporte enviado';
+  document.getElementById('rep_manana').value=''; document.getElementById('rep_tarde').value=''; document.getElementById('rep_comentario').value='';
+  document.getElementById('rep_manana_nombre').value=''; document.getElementById('rep_tarde_nombre').value='';
+  toggleManana(); toggleTarde();
+  cargarMisReportesVolanteo();
+ }catch(e){document.getElementById('msg-rep-vol').innerText='❌ '+(e.detail||'Error');}
+}
+async function cargarMisReportesVolanteo(){
+ try{
+  const reps=await api('/reportes-volanteo/'+USER_ID);
+  const el=document.getElementById('mis-reportes-vol');
+  if(!el) return;
+  el.innerHTML=reps.slice(0,10).map(r=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin-top:6px;font-size:10px;border-left:3px solid #6366f1"><b>${r.sucursal_nombre}</b> - ${r.fecha}<br>Mañana: ${r.manana_volantearon==='si'?'✅ Sí': '❌ No'} ${r.manana_nombre? '('+r.manana_nombre+')': r.manana_quien==='no_se'?' (No sé nombre)':''}<br>Tarde: ${r.tarde_volantearon==='si'?'✅ Sí':'❌ No'} ${r.tarde_nombre? '('+r.tarde_nombre+')': r.tarde_quien==='no_se'?' (No sé nombre)':''}<br>${r.comentario||''}</div>`).join('') || 'Sin reportes';
+  const sel=document.getElementById('rep_sucursal');
+  if(sel){
+   const sucs=await api('/sucursales');
+   const actual=sel.value;
+   sel.innerHTML='<option value="">Seleccionar sucursal...</option>'+sucs.map(s=>`<option value="${s.id}">${s.nombre}</option>`).join('');
+   sel.value=actual;
+  }
+ }catch(e){}
+}
+async function cargarReportesVolanteoAdmin(){
+ try{
+  const reps=await api('/reportes-volanteo');
+  const el=document.getElementById('reportes-vol-admin');
+  if(!el) return;
+  el.innerHTML=reps.slice(0,30).map(r=>`<div style="background:#1e293b;padding:10px;border-radius:10px;margin-top:6px;font-size:11px;border-left:4px solid ${r.manana_volantearon==='si' && r.tarde_volantearon==='si'?'#10b981':'#f59e0b'}"><b>${r.empleado_id} ${r.nombre}</b> - <b>${r.sucursal_nombre}</b><br>${r.fecha_dia} - ${r.fecha}<br>Mañana: <b>${r.manana_volantearon==='si'?'✅ Sí volantearon':'❌ No'}</b> ${r.manana_nombre? '→ '+r.manana_nombre : r.manana_quien==='no_se'?'→ No sé nombre':''}<br>Tarde: <b>${r.tarde_volantearon==='si'?'✅ Sí':'❌ No'}</b> ${r.tarde_nombre? '→ '+r.tarde_nombre : r.tarde_quien==='no_se'?'→ No sé nombre':''}<br>${r.comentario? '💬 '+r.comentario:''}</div>`).join('') || 'Sin reportes';
+ }catch(e){}
+}
 
 </body></html>
 """
