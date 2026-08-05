@@ -1671,7 +1671,7 @@ cargarTodo = async function(){
   cargarLimpiezaStatus();
 };
 
-
+<script>
 function toggleManana(){
  const v=document.getElementById('rep_manana').value;
  const el=document.getElementById('rep_manana_detalle');
@@ -1735,7 +1735,7 @@ async function cargarReportesVolanteoAdmin(){
   el.innerHTML=reps.slice(0,30).map(r=>`<div style="background:#1e293b;padding:10px;border-radius:10px;margin-top:6px;font-size:11px;border-left:4px solid ${r.manana_volantearon==='si' && r.tarde_volantearon==='si'?'#10b981':'#f59e0b'}"><b>${r.empleado_id} ${r.nombre}</b> - <b>${r.sucursal_nombre}</b><br>${r.fecha_dia} - ${r.fecha}<br>Mañana: <b>${r.manana_volantearon==='si'?'✅ Sí volantearon':'❌ No'}</b> ${r.manana_nombre? '→ '+r.manana_nombre : r.manana_quien==='no_se'?'→ No sé nombre':''}<br>Tarde: <b>${r.tarde_volantearon==='si'?'✅ Sí':'❌ No'}</b> ${r.tarde_nombre? '→ '+r.tarde_nombre : r.tarde_quien==='no_se'?'→ No sé nombre':''}<br>${r.comentario? '💬 '+r.comentario:''}</div>`).join('') || 'Sin reportes';
  }catch(e){}
 }
-
+</script>
 </body></html>
 """
 
