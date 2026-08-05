@@ -529,6 +529,18 @@ def guardar_limpieza_config(d: dict):
     return {"ok":True, "config": limpieza_config_db}
 
 
+
+@app.get("/api/empresas")
+def get_empresas(): return list(empresa_db.values())
+
+@app.post("/api/empresas")
+def crear_empresa(d: dict):
+    eid = d.get("id") or str(__import__("uuid").uuid4())[:8]
+    empresa_db[eid] = {"id":eid, "nombre":d.get("nombre",""), "rfc":d.get("rfc",""), "direccion":d.get("direccion",""), "telefono":d.get("telefono",""), "email":d.get("email",""), "logo":d.get("logo",""), "fecha": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    save_db()
+    return empresa_db[eid]
+
+
 HTML = """
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Clock RD - Control BONITA 100% PWA</title>
@@ -993,6 +1005,7 @@ let deferredPrompt;
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; const btn=document.createElement('button'); btn.innerText='📲 Instalar Clock RD como App'; btn.className='btn btn-success'; btn.style.position='fixed'; btn.style.bottom='20px'; btn.style.left='20px'; btn.style.right='20px'; btn.style.zIndex='9999'; btn.onclick=()=>{ deferredPrompt.prompt(); deferredPrompt.userChoice.then(choice=>{ if(choice.outcome==='accepted') console.log('Instalada'); btn.remove(); }); }; document.body.appendChild(btn); });
 
 </script>
+<script>
 async function cargarRolesCheckboxes(){
   try{
     const roles = await api('/api/roles');
@@ -1057,6 +1070,32 @@ cargarTodo = async function(){
   cargarRolesCheckboxes(); cargarRolesLista(); cargarCreadorInfo(); cargarLimpiezaStatus();
 }
 
+
+async function crearEmpresa(){
+  const nombre=document.getElementById('empresa_nombre').value;
+  const rfc=document.getElementById('empresa_rfc').value;
+  const direccion=document.getElementById('empresa_direccion').value;
+  const telefono=document.getElementById('empresa_telefono').value;
+  const email=document.getElementById('empresa_email').value;
+  const logo=document.getElementById('empresa_logo').value;
+  if(!nombre) return alert('Nombre empresa');
+  try{
+    await api('/api/empresas','POST',{nombre,rfc,direccion,telefono,email,logo});
+    alert('Empresa guardada');
+    cargarEmpresas();
+  }catch(e){ alert(e.detail||'Error'); }
+}
+async function cargarEmpresas(){
+  try{
+    const empresas=await api('/api/empresas');
+    const el=document.getElementById('empresa-lista');
+    if(el) el.innerHTML=empresas.map(e=>`<div style="background:#f8fafc;padding:8px;border-radius:10px;margin-top:6px"><b>${e.nombre}</b> ${e.rfc||''}<br><small>${e.direccion||''} - ${e.telefono||''}</small></div>`).join('')||'Sin empresas';
+  }catch(e){}
+}
+const oldCargarTodoEmpresa = cargarTodo;
+cargarTodo = async function(){ await oldCargarTodoEmpresa(); cargarEmpresas(); }
+
+</script>
 </body></html>
 """
 
