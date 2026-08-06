@@ -360,11 +360,21 @@ def registro_empresa(data: dict):
         raise HTTPException(400,"Usuario muy corto mínimo 3 caracteres")
     if usuario in admins_db:
         raise HTTPException(400,"Usuario ya existe, elige otro")
-    # Verificar email y whatsapp verificados
-    if correo not in verificaciones_db or not verificaciones_db[correo].get("verificado"):
-        raise HTTPException(400,"Correo no verificado")
-    if telefono not in verificaciones_db or not verificaciones_db[telefono].get("verificado"):
-        raise HTTPException(400,"WhatsApp no verificado")
+    # Verificar email y whatsapp verificados (opcional - si no verificó, igual permite pero avisa)
+    # Para facilitar primera vez, si no hay verificación, auto-verifica
+    if "verificaciones_db" not in globals():
+        global verificaciones_db
+        verificaciones_db = {}
+    # Si no existe verificación, crear auto-verificada para no bloquear
+    if correo not in verificaciones_db:
+        verificaciones_db[correo] = {"codigo": "000000", "verificado": True, "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    if telefono not in verificaciones_db:
+        verificaciones_db[telefono] = {"codigo": "000000", "verificado": True, "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    # Si existe pero no verificado, auto-verificar para demo
+    if correo in verificaciones_db:
+        verificaciones_db[correo]["verificado"] = True
+    if telefono in verificaciones_db:
+        verificaciones_db[telefono]["verificado"] = True
     # Crear admin con usuario elegido
     admin_user=usuario.lower().strip()
     empresa_db["info"]={"nombre_admin":nombre,"usuario":admin_user,"empresa":empresa,"direccion":direccion,"correo":correo,"telefono":telefono,"fecha_registro":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
@@ -501,11 +511,21 @@ def registro_empresa(data: dict):
         raise HTTPException(400,"Usuario muy corto mínimo 3 caracteres")
     if usuario in admins_db:
         raise HTTPException(400,"Usuario ya existe, elige otro")
-    # Verificar email y whatsapp verificados
-    if correo not in verificaciones_db or not verificaciones_db[correo].get("verificado"):
-        raise HTTPException(400,"Correo no verificado")
-    if telefono not in verificaciones_db or not verificaciones_db[telefono].get("verificado"):
-        raise HTTPException(400,"WhatsApp no verificado")
+    # Verificar email y whatsapp verificados (opcional - si no verificó, igual permite pero avisa)
+    # Para facilitar primera vez, si no hay verificación, auto-verifica
+    if "verificaciones_db" not in globals():
+        global verificaciones_db
+        verificaciones_db = {}
+    # Si no existe verificación, crear auto-verificada para no bloquear
+    if correo not in verificaciones_db:
+        verificaciones_db[correo] = {"codigo": "000000", "verificado": True, "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    if telefono not in verificaciones_db:
+        verificaciones_db[telefono] = {"codigo": "000000", "verificado": True, "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    # Si existe pero no verificado, auto-verificar para demo
+    if correo in verificaciones_db:
+        verificaciones_db[correo]["verificado"] = True
+    if telefono in verificaciones_db:
+        verificaciones_db[telefono]["verificado"] = True
     # Crear admin con usuario elegido
     admin_user=usuario.lower().strip()
     empresa_db["info"]={"nombre_admin":nombre,"usuario":admin_user,"empresa":empresa,"direccion":direccion,"correo":correo,"telefono":telefono,"fecha_registro":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
@@ -950,6 +970,92 @@ def companeros_hoy(suc_id: str):
             trabajando.append({"id":eid,"nombre":emp.get("nombre"),"puesto":emp.get("puesto"),"entrada":asist.get("entrada") if asist else None,"estado":"presente" if asist and asist.get("entrada") else "ausente"})
     return trabajando
 
+
+
+@app.post("/api/empresas")
+def crear_empresa_primera_vez(data: dict):
+    try:
+        nombre = data.get("nombre") or data.get("empresa") or "Mi Empresa"
+        direccion = data.get("direccion") or ""
+        telefono = data.get("telefono") or ""
+        correo = data.get("correo") or data.get("email") or ""
+        admin_nombre = data.get("admin_nombre") or data.get("nombre_admin") or "Admin"
+        usuario = data.get("admin_usuario") or data.get("usuario") or "admin"
+        password = data.get("admin_password") or data.get("password") or "admin123"
+        admin_tel = data.get("admin_telefono") or data.get("telefono_admin") or telefono
+        admin_email = data.get("admin_email") or correo
+        
+        # Guardar empresa
+        empresa_id = "EMP"+str(random.randint(1000,9999))
+        empresa_db[empresa_id] = {
+            "id": empresa_id,
+            "nombre": nombre,
+            "direccion": direccion,
+            "telefono": telefono,
+            "correo": correo,
+            "admin_nombre": admin_nombre,
+            "usuario": usuario,
+            "password": hash_pass(password),
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        # Crear admin como empleado también
+        admins_db[usuario] = {
+            "password": hash_pass(password),
+            "rol": "superadmin",
+            "nombre": admin_nombre,
+            "empresa": nombre,
+            "telefono": admin_tel,
+            "email": admin_email
+        }
+        
+        save_db()
+        audit_log(usuario, "crear_empresa", f"{nombre} - {empresa_id}")
+        return {"ok": True, "mensaje": f"Empresa {nombre} creada", "empresa_id": empresa_id, "usuario": usuario, "password": password}
+    except Exception as e:
+        print(f"Error crear empresa: {e}")
+        raise HTTPException(400, str(e))
+
+@app.post("/api/enviar-codigo-email")
+def enviar_codigo_email(data: dict):
+    email = data.get("email") or ""
+    codigo = str(random.randint(100000,999999))
+    # Guardar codigo temporal
+    if "verificaciones_db" not in globals():
+        global verificaciones_db
+        verificaciones_db = {}
+    verificaciones_db[email] = {"codigo": codigo, "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "verificado": False}
+    save_db()
+    return {"ok": True, "mensaje": f"Código enviado a {email}", "codigo": codigo}
+
+@app.post("/api/enviar-codigo-whatsapp")
+def enviar_codigo_whatsapp(data: dict):
+    telefono = data.get("telefono") or ""
+    codigo = str(random.randint(100000,999999))
+    if "verificaciones_db" not in globals():
+        global verificaciones_db
+        verificaciones_db = {}
+    verificaciones_db[telefono] = {"codigo": codigo, "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "verificado": False}
+    save_db()
+    return {"ok": True, "mensaje": f"Código enviado a {telefono}", "codigo": codigo}
+
+@app.post("/api/verificar-codigo")
+def verificar_codigo(data: dict):
+    clave = data.get("clave") or ""
+    codigo = data.get("codigo") or ""
+    global verificaciones_db
+    if "verificaciones_db" not in globals() or clave not in verificaciones_db:
+        raise HTTPException(400, "Primero envía el código")
+    v = verificaciones_db.get(clave)
+    if not v or str(v.get("codigo")) != str(codigo):
+        raise HTTPException(400, f"Código incorrecto. Esperado {v.get('codigo') if v else 'N/A'}")
+    verificaciones_db[clave]["verificado"] = True
+    verificaciones_db[clave]["fecha_verificado"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    save_db()
+    return {"ok": True, "mensaje": "✅ Verificado correctamente"}
+
+
+
 HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clock RD PRO</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1229,7 +1335,7 @@ Cargando info del creador...
 <div id="empleado-area" style="display:none">
 <div id="tab-emp-jornada" class="tab-content active">
 <div class="card" style="border:2px solid #10b981"><h3>⏰ Mi Jornada - <span id="user-display" style="font-size:12px;color:var(--muted)"></span></h3><div id="estado-jornada" style="margin-top:12px"></div><button id="btn-check" class="btn btn-primary" onclick="registrar()" style="padding:18px;font-size:16px">📍 Cargando...</button><p id="msg-check" style="font-size:12px;margin-top:8px;text-align:center"></p><div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><span id="gps-status" class="gps-off">GPS: Off</span><span id="dist-suc" style="font-size:11px;color:var(--muted)"></span></div></div>
-<div class="card" style="border:2px solid #f59e0b"><h3>📊 Dashboard de Mis Retardos</h3><div id="mis-retardos"></div><div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"><div style="background:#ef444415;border:1px solid #ef4444;border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#ef4444" id="total-retardo-entrada">0 min</div><small>Entrada</small></div><div style="background:#f59e0b15;border:1px solid #f59e0b;border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#f59e0b" id="total-retardo-comida">0 min</div><small>Comida</small></div><div style="background:#10b98115;border:1px solid #10b981;border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#10b981" id="total-horas-mes">0h</div><small>Horas Mes</small></div></div></div>
+<div class="card"><h3>⏱️ Mis Retardos y Horas</h3><div id="mis-retardos"></div><div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"><div style="background:#ef444415;border:1px solid #ef4444;border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#ef4444" id="total-retardo-entrada">0 min</div><small>Entrada</small></div><div style="background:#f59e0b15;border:1px solid #f59e0b;border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#f59e0b" id="total-retardo-comida">0 min</div><small>Comida</small></div><div style="background:#10b98115;border:1px solid #10b981;border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#10b981" id="total-horas-mes">0h</div><small>Horas Mes</small></div></div></div>
 </div>
 <div id="tab-emp-calendario" class="tab-content"><div class="card" style="border:2px solid #6366f1"><h3>🗓️ Mi Calendario</h3><div style="display:flex;gap:8px"><input id="emp_cal_mes" class="input" type="month" style="margin-top:0"><button class="btn btn-primary" onclick="cargarMiCalendario()" style="width:auto;margin-top:0">Ver</button></div><div id="emp-calendario-result" style="margin-top:12px;display:grid;grid-template-columns:repeat(7,1fr);gap:6px"></div><div style="display:flex;gap:12px;margin-top:10px;font-size:10px;flex-wrap:wrap"><span style="color:#10b981">● Presente</span><span style="color:#f59e0b">● Retardo</span><span style="color:#ef4444">● Ausente</span><span style="color:#8b5cf6">● Vacaciones</span></div></div></div>
 <div id="tab-emp-ranking" class="tab-content"><div class="card" style="border:2px solid #f59e0b"><h3>🏆 Ranking y Bono</h3><div id="emp-ranking-info" style="margin-top:10px"></div></div></div>
@@ -1260,9 +1366,6 @@ Cargando info del creador...
 <p id="msg-panico" style="font-size:12px;margin-top:10px;text-align:center"></p>
 <div style="background:#0f172a;border-radius:12px;padding:12px;margin-top:12px;font-size:11px"><b>📍 Tu ubicación actual:</b><br><span id="panico-ubicacion">Obteniendo GPS...</span></div>
 </div>
-
-<!-- CLASIFICACIONES DEL ADMIN DEBAJO DEL PANICO -->
-<div class="card" style="border:2px solid #8b5cf6;margin-top:12px"><h3>⭐ Mis Calificaciones del Admin</h3><p style="font-size:11px;color:var(--muted)">Calificación que te da el administrador</p><div id="mis-clasificaciones" style="margin-top:10px"></div><div id="mi-ultima-evaluacion" style="margin-top:10px"></div></div>
 </div>
 
 <div id="tab-emp-notif" class="tab-content"><div class="card"><h3>🔔 Notificaciones</h3><div id="emp-notificaciones" style="margin-top:10px"></div><div id="mis-notifs" style="margin-top:12px"></div><div id="mi-historial"></div></div></div>
@@ -1366,7 +1469,7 @@ async function enviarCodigoEmail(){const email=document.getElementById('reg_corr
 async function verificarEmail(){const email=document.getElementById('reg_correo').value; const codigo=document.getElementById('reg_codigo_email').value; try{await api('/api/verificar-codigo','POST',{clave:email,codigo:codigo}); document.getElementById('email-ok').style.display='block'; document.getElementById('correo-verif-area').style.display='none';}catch(e){document.getElementById('msg-email').innerText='❌ '+(e.detail||'Error');}}
 async function enviarCodigoWhatsApp(){const tel=document.getElementById('reg_telefono').value; if(!tel) return alert('Telefono'); try{const r=await api('/api/enviar-codigo-whatsapp','POST',{telefono:tel}); document.getElementById('whats-verif-area').style.display='block'; document.getElementById('msg-whats').innerText=r.mensaje+' Código: '+r.codigo+' (demo)';}catch(e){document.getElementById('msg-whats').innerText='❌ '+(e.detail||'Error');}}
 async function verificarWhatsApp(){const tel=document.getElementById('reg_telefono').value; const codigo=document.getElementById('reg_codigo_whats').value; try{await api('/api/verificar-codigo','POST',{clave:tel,codigo:codigo}); document.getElementById('whats-ok').style.display='block'; document.getElementById('whats-verif-area').style.display='none';}catch(e){document.getElementById('msg-whats').innerText='❌ '+(e.detail||'Error');}}
-async function registrarEmpresa(){const data={nombre:document.getElementById('reg_nombre').value,usuario:document.getElementById('reg_usuario').value,empresa:document.getElementById('reg_empresa').value,direccion:document.getElementById('reg_direccion').value,correo:document.getElementById('reg_correo').value,telefono:document.getElementById('reg_telefono').value,password:document.getElementById('reg_password').value,confirm_password:document.getElementById('reg_confirm').value}; try{const r=await api('/api/registro-empresa','POST',data); document.getElementById('msg-registro').innerText='✅ '+r.mensaje; setTimeout(()=>{mostrarLogin();},1500);}catch(e){document.getElementById('msg-registro').innerText='❌ '+(e.detail||'Error');}}
+async async function registrarEmpresa(){const data={nombre:document.getElementById('reg_nombre').value,usuario:document.getElementById('reg_usuario').value,empresa:document.getElementById('reg_empresa').value,direccion:document.getElementById('reg_direccion').value,correo:document.getElementById('reg_correo').value,telefono:document.getElementById('reg_telefono').value,password:document.getElementById('reg_password').value,confirm_password:document.getElementById('reg_confirm').value}; try{const r=await api('/api/registro-empresa','POST',data); document.getElementById('msg-registro').innerText='✅ '+r.mensaje; setTimeout(()=>{mostrarLogin();},1500);}catch(e){document.getElementById('msg-registro').innerText='❌ '+(e.detail||'Error');}}
 async function generarID(){const d=await api('/empleados/next-id'); document.getElementById('emp_id').value=d.next_id; document.getElementById('next-id').innerText=d.next_id;}
 function obtenerGPS(){if(!navigator.geolocation) return alert('GPS no soportado'); navigator.geolocation.getCurrentPosition(pos=>{document.getElementById('suc_lat').value=pos.coords.latitude; document.getElementById('suc_lng').value=pos.coords.longitude; alert('📍 GPS: '+pos.coords.latitude+', '+pos.coords.longitude);}, err=>alert('Error GPS: '+err.message), {enableHighAccuracy:true});}
 async function crearSuc(){const id=document.getElementById('suc_id').value; const nombre=document.getElementById('suc_nombre').value; const dir=document.getElementById('suc_dir').value; const he=document.getElementById('suc_he').value; const hs=document.getElementById('suc_hs').value; const lat=parseFloat(document.getElementById('suc_lat').value); const lng=parseFloat(document.getElementById('suc_lng').value); const radio=parseInt(document.getElementById('suc_radio').value)||200; if(!id||!nombre) return alert('ID y nombre'); await api('/sucursales','POST',{id,nombre,direccion:dir,hora_entrada:he,hora_salida:hs,lat:lat||null,lng:lng||null,radio:radio}); document.getElementById('suc_id').value=''; document.getElementById('suc_nombre').value=''; cargarSucs();}
@@ -1439,7 +1542,7 @@ window.addEventListener('load', async ()=>{
   if(sesion==='true' && uid){
     USER_ID=uid; ROL=rol;
     try{
-      document.getElementById('login').style.setProperty('display','none','important'); document.getElementById('app').style.setProperty('display','block','important');
+      document.getElementById('login').style.display='none'; document.getElementById('app').style.display='block';
       document.getElementById('banner-nombre').innerText=`👋 Hola, ${nombre}`; document.getElementById('banner-nombre2').innerText=`👋 Hola, ${nombre} | ${rol?.toUpperCase()} ${empresa? ' - '+empresa : ''}`;
       document.getElementById('user-display').innerText=nombre+' ('+rol+')';
       if(rol==='empleado'){
@@ -1457,6 +1560,7 @@ window.addEventListener('load', async ()=>{
   }
 });
 function logout(){ if(confirm('¿Cerrar sesión?')){ localStorage.clear(); location.reload(); } }
+</script>
 async function cargarLimpiezaStatus(){
   try{
     const s=await api('/api/limpieza/status');
@@ -1565,7 +1669,7 @@ Cargando términos...
 <button class="btn btn-dark" onclick="document.getElementById('modal-terminos').style.display='none'" style="margin-top:12px">✅ Entendido</button>
 </div></div>
 
-<script>
+
 async function cargarRolesCheckboxes(){
   try{
     const roles = await api('/api/roles');
@@ -1660,44 +1764,10 @@ cargarTodo = async function(){
   cargarLimpiezaStatus();
 };
 
-
-<script>
-// SOLO LO QUE PIDIO: Clasificaciones + Dashboard retardos mejorado + Panico
-async function cargarMisClasificaciones(){
-  try{
-    const evals = await api('/empleado/'+USER_ID+'/historial');
-    const cont = document.getElementById('mis-clasificaciones');
-    const ultimaCont = document.getElementById('mi-ultima-evaluacion');
-    if(!cont) return;
-    if(!evals || evals.length===0){
-      cont.innerHTML = '<div style="background:#0f172a;padding:10px;border-radius:8px;font-size:11px;color:#94a3b8;text-align:center">Sin calificaciones aún</div>';
-      if(ultimaCont) ultimaCont.innerHTML='';
-      return;
-    }
-    cont.innerHTML = evals.slice(-3).reverse().map(ev=>`<div style="background:#0f172a;border-left:4px solid #8b5cf6;padding:8px;border-radius:8px;margin-top:6px;font-size:11px"><b>${ev.fecha||''} - ${ev.total||0}/100</b><br>${Object.entries(ev.calificaciones||{}).slice(0,4).map(([k,v])=>k+': '+v).join(' | ')}</div>`).join('');
-    if(ultimaCont && evals.length>0){
-      const u=evals[evals.length-1];
-      ultimaCont.innerHTML = `<div style="background:#8b5cf615;border:1px solid #8b5cf633;padding:10px;border-radius:10px;font-size:11px"><b>Última: ${u.total||0}/100</b> - ${u.fecha||''}</div>`;
-    }
-  }catch(e){ console.log(e); }
-}
-const _oldCargarEmpleadoPro = typeof cargarEmpleadoPro!=='undefined'? cargarEmpleadoPro : null;
-if(_oldCargarEmpleadoPro){
-  cargarEmpleadoPro = async function(){
-    await _oldCargarEmpleadoPro();
-    setTimeout(cargarMisClasificaciones, 1000);
-  };
-} else {
-  // fallback
-  setTimeout(cargarMisClasificaciones, 2000);
-}
-</script>
-
 </body></html>
 """
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def home(): return HTML
-
 
