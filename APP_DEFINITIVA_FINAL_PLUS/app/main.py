@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -1669,5 +1668,3 @@ cargarTodo = async function(){
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def home(): return HTML
-
-
