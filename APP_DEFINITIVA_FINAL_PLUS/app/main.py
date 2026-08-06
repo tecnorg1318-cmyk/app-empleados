@@ -92,27 +92,9 @@ turnos_rotativos_db = {}
 config_admin_db = {"telefono_admin": "", "whatsapp_activo": True, "bono_puntualidad": 500, "sueldo_default": 50}
 permisos_db = {"empleado":{"ver":["propia_jornada"],"editar":[]},"supervisor":{"ver":["dashboard","empleados","sucursales","retardos"],"editar":[]},"rh":{"ver":["dashboard","empleados","retardos","nomina","vacaciones"],"editar":["empleados","vacaciones"]},"gerente":{"ver":["dashboard","sucursales","empleados","retardos","ruta_gps","vacaciones"],"editar":["sucursales","empleados"]},"admin":{"ver":["todo"],"editar":["todo"]}}
 perfil_fotos_db = {}
-roles_custom_db = {
-    "empleado": {"nombre": "Empleado", "descripcion": "Empleado base", "color": "#64748b", "permisos": ["propia_jornada"], "es_sistema": True},
-    "supervisor": {"nombre": "Supervisor", "descripcion": "Supervisa empleados", "color": "#0ea5e9", "permisos": ["dashboard","empleados","sucursales","retardos"], "es_sistema": True},
-    "rh": {"nombre": "Recursos Humanos", "descripcion": "Gestión de personal", "color": "#8b5cf6", "permisos": ["dashboard","empleados","retardos","nomina","vacaciones"], "es_sistema": True},
-    "gerente": {"nombre": "Gerente", "descripcion": "Gerente de sucursal", "color": "#f59e0b", "permisos": ["dashboard","sucursales","empleados","retardos","ruta_gps","vacaciones"], "es_sistema": True},
-    "admin": {"nombre": "Admin", "descripcion": "Administrador total", "color": "#ef4444", "permisos": ["todo"], "es_sistema": True},
-    "superadmin": {"nombre": "Super Admin", "descripcion": "Acceso total del sistema", "color": "#dc2626", "permisos": ["todo"], "es_sistema": True}
-}
-creador_info_db = {
-    "nombre": "Rubén García",
-    "empresa": "Clock RD - Sistema de Control",
-    "version": "PRO MAX 2026",
-    "fecha_creacion": "2024",
-    "contacto": "Soporte exclusivo",
-    "licencia": "Exclusiva - Uso privado",
-    "descripcion": "Sistema exclusivo desarrollado para control de asistencia, GPS, nómina y gestión de personal. Propiedad intelectual protegida."
-}
-
 
 def load_db():
-    global sucursales_db, empleados_db, evaluaciones_db, asistencias_db, alertas_db, gps_logs_db, vacaciones_db, justificantes_db, audit_db, chat_db, panico_db, reportes_volanteo_db, empresa_db, verificaciones_db, permisos_db, bonos_db, metas_db, nomina_db, notificaciones_db, turnos_rotativos_db, config_admin_db, perfil_fotos_db, limpieza_config_db, roles_custom_db, creador_info_db
+    global sucursales_db, empleados_db, evaluaciones_db, asistencias_db, alertas_db, gps_logs_db, vacaciones_db, justificantes_db, audit_db, chat_db, panico_db, reportes_volanteo_db, empresa_db, verificaciones_db, permisos_db, bonos_db, metas_db, nomina_db, notificaciones_db, turnos_rotativos_db, config_admin_db, perfil_fotos_db
     if os.path.exists(DB_FILE):
         try:
             with open(DB_FILE,'r', encoding='utf-8') as f:
@@ -120,15 +102,15 @@ def load_db():
                 sucursales_db=data.get("sucursales",{})
                 empleados_db=data.get("empleados",{"EMPDEMO": {"id":"EMPDEMO","nombre":"Empleado Demo","puesto":"Demo","rol":"empleado","password":hash_pass("demo"),"sucursales_ids":[],"horario":{},"activo":True,"tiempo_comida":120,"telefono":"5210000000000","sueldo_hora":50,"foto":""},
         "EMP0001": {"id":"EMP0001","nombre":"Empleado Prueba","puesto":"Botarga","rol":"empleado","password":hash_pass("0001"),"sucursales_ids":[],"horario":{},"activo":True,"tiempo_comida":120,"telefono":"5210000000000","sueldo_hora":50,"foto":""}})
-                evaluaciones_db=data.get("evaluaciones",[]); asistencias_db=data.get("asistencias",[]); alertas_db=data.get("alertas",[]); gps_logs_db=data.get("gps_logs",[]); vacaciones_db=data.get("vacaciones",[]); justificantes_db=data.get("justificantes",[]); audit_db=data.get("audit",[]); chat_db=data.get("chat",[]); panico_db=data.get("panico",[]); reportes_volanteo_db=data.get("reportes_volanteo",[]); empresa_db=data.get("empresa",{}); verificaciones_db=data.get("verificaciones",{}); permisos_db=data.get("permisos",{"empleado":{"ver":["propia_jornada"],"editar":[]},"supervisor":{"ver":["dashboard","empleados","sucursales","retardos"],"editar":[]},"rh":{"ver":["dashboard","empleados","retardos","nomina","vacaciones"],"editar":["empleados","vacaciones"]},"gerente":{"ver":["dashboard","sucursales","empleados","retardos","ruta_gps","vacaciones"],"editar":["sucursales","empleados"]},"admin":{"ver":["todo"],"editar":["todo"]}}); bonos_db=data.get("bonos",{}); metas_db=data.get("metas",{}); nomina_db=data.get("nomina",{}); notificaciones_db=data.get("notificaciones",[]); turnos_rotativos_db=data.get("turnos_rotativos",{}); config_admin_db=data.get("config_admin",{"telefono_admin":"","whatsapp_activo":True,"bono_puntualidad":500,"sueldo_default":50}); perfil_fotos_db=data.get("perfil_fotos",{}); limpieza_config_db.update(data.get("limpieza_config",{"ultima_limpieza_gps": "", "ultima_limpieza_general": "", "gps_meses": 3, "general_meses": 6, "auto_activo": True})); roles_custom_db.update(data.get("roles_custom",{})); creador_info_db.update(data.get("creador_info",{})); return
+                evaluaciones_db=data.get("evaluaciones",[]); asistencias_db=data.get("asistencias",[]); alertas_db=data.get("alertas",[]); gps_logs_db=data.get("gps_logs",[]); vacaciones_db=data.get("vacaciones",[]); justificantes_db=data.get("justificantes",[]); audit_db=data.get("audit",[]); chat_db=data.get("chat",[]); panico_db=data.get("panico",[]); reportes_volanteo_db=data.get("reportes_volanteo",[]); empresa_db=data.get("empresa",{}); verificaciones_db=data.get("verificaciones",{}); permisos_db=data.get("permisos",{"empleado":{"ver":["propia_jornada"],"editar":[]},"supervisor":{"ver":["dashboard","empleados","sucursales","retardos"],"editar":[]},"rh":{"ver":["dashboard","empleados","retardos","nomina","vacaciones"],"editar":["empleados","vacaciones"]},"gerente":{"ver":["dashboard","sucursales","empleados","retardos","ruta_gps","vacaciones"],"editar":["sucursales","empleados"]},"admin":{"ver":["todo"],"editar":["todo"]}}); bonos_db=data.get("bonos",{}); metas_db=data.get("metas",{}); nomina_db=data.get("nomina",{}); notificaciones_db=data.get("notificaciones",[]); turnos_rotativos_db=data.get("turnos_rotativos",{}); config_admin_db=data.get("config_admin",{"telefono_admin":"","whatsapp_activo":True,"bono_puntualidad":500,"sueldo_default":50}); perfil_fotos_db=data.get("perfil_fotos",{}); return
         except Exception as e:
             print(f"Load error {e}")
     sucursales_db = {}; empleados_db = {"EMPDEMO": {"id":"EMPDEMO","nombre":"Empleado Demo","puesto":"Demo","rol":"empleado","password":hash_pass("demo"),"sucursales_ids":[],"horario":{},"activo":True,"tiempo_comida":120,"telefono":"5210000000000","sueldo_hora":50,"foto":""},
-        "EMP0001": {"id":"EMP0001","nombre":"Empleado Prueba","puesto":"Botarga","rol":"empleado","password":hash_pass("0001"),"sucursales_ids":[],"horario":{},"activo":True,"tiempo_comida":120,"telefono":"5210000000000","sueldo_hora":50,"foto":""}}; evaluaciones_db = []; asistencias_db=[]; alertas_db=[]; gps_logs_db=[]; vacaciones_db=[]; justificantes_db=[]; audit_db=[]; chat_db=[]; panico_db=[]; reportes_volanteo_db=[]; empresa_db={}; verificaciones_db={}; permisos_db={"empleado":{"ver":["propia_jornada"],"editar":[]},"supervisor":{"ver":["dashboard","empleados","sucursales","retardos"],"editar":[]},"rh":{"ver":["dashboard","empleados","retardos","nomina","vacaciones"],"editar":["empleados","vacaciones"]},"gerente":{"ver":["dashboard","sucursales","empleados","retardos","ruta_gps","vacaciones"],"editar":["sucursales","empleados"]},"admin":{"ver":["todo"],"editar":["todo"]}}; bonos_db={}; metas_db={}; nomina_db={}; notificaciones_db=[]; turnos_rotativos_db={}; config_admin_db={"telefono_admin":"","whatsapp_activo":True,"bono_puntualidad":500,"sueldo_default":50}; perfil_fotos_db={}; limpieza_config_db={"ultima_limpieza_gps": "", "ultima_limpieza_general": "", "gps_meses": 3, "general_meses": 6, "auto_activo": True}
+        "EMP0001": {"id":"EMP0001","nombre":"Empleado Prueba","puesto":"Botarga","rol":"empleado","password":hash_pass("0001"),"sucursales_ids":[],"horario":{},"activo":True,"tiempo_comida":120,"telefono":"5210000000000","sueldo_hora":50,"foto":""}}; evaluaciones_db = []; asistencias_db=[]; alertas_db=[]; gps_logs_db=[]; vacaciones_db=[]; justificantes_db=[]; audit_db=[]; chat_db=[]; panico_db=[]; reportes_volanteo_db=[]; empresa_db={}; verificaciones_db={}; permisos_db={"empleado":{"ver":["propia_jornada"],"editar":[]},"supervisor":{"ver":["dashboard","empleados","sucursales","retardos"],"editar":[]},"rh":{"ver":["dashboard","empleados","retardos","nomina","vacaciones"],"editar":["empleados","vacaciones"]},"gerente":{"ver":["dashboard","sucursales","empleados","retardos","ruta_gps","vacaciones"],"editar":["sucursales","empleados"]},"admin":{"ver":["todo"],"editar":["todo"]}}; bonos_db={}; metas_db={}; nomina_db={}; notificaciones_db=[]; turnos_rotativos_db={}; config_admin_db={"telefono_admin":"","whatsapp_activo":True,"bono_puntualidad":500,"sueldo_default":50}; perfil_fotos_db={}
 
 def save_db():
     try:
-        with open(DB_FILE,'w', encoding='utf-8') as f: json.dump({"sucursales":sucursales_db,"empleados":empleados_db,"evaluaciones":evaluaciones_db,"asistencias":asistencias_db,"alertas":alertas_db,"gps_logs":gps_logs_db,"vacaciones":vacaciones_db,"justificantes":justificantes_db,"audit":audit_db,"chat":chat_db,"panico":panico_db,"reportes_volanteo":reportes_volanteo_db,"empresa":empresa_db,"verificaciones":verificaciones_db,"permisos":permisos_db,"bonos":bonos_db,"metas":metas_db,"nomina":nomina_db,"notificaciones":notificaciones_db,"turnos_rotativos":turnos_rotativos_db,"config_admin":config_admin_db,"perfil_fotos":perfil_fotos_db,"limpieza_config":limpieza_config_db,"roles_custom":roles_custom_db,"creador_info":creador_info_db}, f, ensure_ascii=False, indent=2)
+        with open(DB_FILE,'w', encoding='utf-8') as f: json.dump({"sucursales":sucursales_db,"empleados":empleados_db,"evaluaciones":evaluaciones_db,"asistencias":asistencias_db,"alertas":alertas_db,"gps_logs":gps_logs_db,"vacaciones":vacaciones_db,"justificantes":justificantes_db,"audit":audit_db,"chat":chat_db,"panico":panico_db,"reportes_volanteo":reportes_volanteo_db,"empresa":empresa_db,"verificaciones":verificaciones_db,"permisos":permisos_db,"bonos":bonos_db,"metas":metas_db,"nomina":nomina_db,"notificaciones":notificaciones_db,"turnos_rotativos":turnos_rotativos_db,"config_admin":config_admin_db,"perfil_fotos":perfil_fotos_db}, f, ensure_ascii=False, indent=2)
     except Exception as e:
         print(e)
 
@@ -155,110 +137,6 @@ def limpiar_gps_antiguo():
         try: return datetime.strptime(f, "%Y-%m-%d %H:%M:%S") >= limite
         except: return True
     gps_logs_db[:] = [g for g in gps_logs_db if es_reciente(g.get("fecha",""))]; alertas_db[:] = [a for a in alertas_db if a.get("tipo")!="gps_fuera" or es_reciente(a.get("fecha",""))]
-
-# === LIMPIEZA AUTOMATICA INTELIGENTE: GPS 3 meses, resto 6 meses, conserva empresas/empleados/sucursales/roles ===
-limpieza_config_db = {"ultima_limpieza_gps": "", "ultima_limpieza_general": "", "gps_meses": 3, "general_meses": 6, "auto_activo": True}
-
-def ejecutar_limpieza_inteligente(forzado=False):
-    ahora = datetime.now()
-    result = {"gps_borrados": 0, "asistencias_borradas": 0, "alertas_borradas": 0, "chat_borrados": 0, "panico_borrados": 0, "evaluaciones_borradas": 0, "audit_borrados": 0, "espacio_liberado_mb": 0, "conservados": "empresas, empleados, sucursales, roles, permisos, fotos perfil"}
-    
-    # GPS cada 3 meses
-    limite_gps = ahora - timedelta(days=limpieza_config_db.get("gps_meses",3)*30)
-    debe_gps = False
-    if forzado: debe_gps = True
-    else:
-        try:
-            ultima = datetime.strptime(limpieza_config_db.get("ultima_limpieza_gps","2000-01-01 00:00:00"), "%Y-%m-%d %H:%M:%S")
-            if (ahora - ultima).days >= limpieza_config_db.get("gps_meses",3)*30: debe_gps=True
-        except: debe_gps=True
-    
-    if debe_gps:
-        antes = len(gps_logs_db)
-        def es_reciente_gps(f):
-            try: return datetime.strptime(f, "%Y-%m-%d %H:%M:%S") >= limite_gps
-            except: 
-                try: return datetime.strptime(f, "%Y-%m-%d") >= limite_gps
-                except: return True
-        gps_logs_db[:] = [g for g in gps_logs_db if es_reciente_gps(g.get("fecha",""))]
-        result["gps_borrados"] = antes - len(gps_logs_db)
-        limpieza_config_db["ultima_limpieza_gps"] = ahora.strftime("%Y-%m-%d %H:%M:%S")
-    
-    # General cada 6 meses
-    limite_gen = ahora - timedelta(days=limpieza_config_db.get("general_meses",6)*30)
-    debe_gen = False
-    if forzado: debe_gen = True
-    else:
-        try:
-            ultima = datetime.strptime(limpieza_config_db.get("ultima_limpieza_general","2000-01-01 00:00:00"), "%Y-%m-%d %H:%M:%S")
-            if (ahora - ultima).days >= limpieza_config_db.get("general_meses",6)*30: debe_gen=True
-        except: debe_gen=True
-    
-    if debe_gen:
-        def es_reciente_gen(f):
-            try: 
-                # intenta ambos formatos
-                try: return datetime.strptime(f, "%Y-%m-%d %H:%M:%S") >= limite_gen
-                except: return datetime.strptime(f, "%Y-%m-%d") >= limite_gen
-            except: return True
-        
-        # Asistencias >6 meses
-        antes = len(asistencias_db)
-        asistencias_db[:] = [a for a in asistencias_db if es_reciente_gen(a.get("fecha_dia", a.get("fecha","")))]
-        result["asistencias_borradas"] = antes - len(asistencias_db)
-        
-        # Alertas (no gps ya limpiado, pero resto)
-        antes = len(alertas_db)
-        alertas_db[:] = [a for a in alertas_db if es_reciente_gen(a.get("fecha",""))]
-        result["alertas_borradas"] = antes - len(alertas_db)
-        
-        # Chat
-        antes = len(chat_db)
-        chat_db[:] = [c for c in chat_db if es_reciente_gen(c.get("fecha",""))]
-        result["chat_borrados"] = antes - len(chat_db)
-        
-        # Panico
-        antes = len(panico_db)
-        panico_db[:] = [p for p in panico_db if es_reciente_gen(p.get("fecha",""))]
-        result["panico_borrados"] = antes - len(panico_db)
-        
-        # Evaluaciones
-        antes = len(evaluaciones_db)
-        evaluaciones_db[:] = [e for e in evaluaciones_db if es_reciente_gen(e.get("fecha",""))]
-        result["evaluaciones_borradas"] = antes - len(evaluaciones_db)
-        
-        # Audit deja últimos 200
-        if len(audit_db) > 200:
-            result["audit_borrados"] = len(audit_db) - 200
-            audit_db[:] = audit_db[-200:]
-        
-        limpieza_config_db["ultima_limpieza_general"] = ahora.strftime("%Y-%m-%d %H:%M:%S")
-    
-    # Calcular espacio aprox
-    total_borrados = result["gps_borrados"] + result["asistencias_borradas"] + result["alertas_borradas"] + result["chat_borrados"] + result["panico_borrados"] + result["evaluaciones_borradas"]
-    result["espacio_liberado_mb"] = round(total_borrados * 0.0005, 2)  # aprox 0.5KB por registro
-    
-    save_db()
-    return result
-
-def check_limpieza_automatica():
-    if not limpieza_config_db.get("auto_activo", True):
-        return None
-    # Solo ejecuta si debe, sino None
-    ahora = datetime.now()
-    debe = False
-    try:
-        ultima_gps = datetime.strptime(limpieza_config_db.get("ultima_limpieza_gps","2000-01-01 00:00:00"), "%Y-%m-%d %H:%M:%S")
-        if (ahora - ultima_gps).days >= limpieza_config_db.get("gps_meses",3)*30: debe=True
-    except: debe=True
-    try:
-        ultima_gen = datetime.strptime(limpieza_config_db.get("ultima_limpieza_general","2000-01-01 00:00:00"), "%Y-%m-%d %H:%M:%S")
-        if (ahora - ultima_gen).days >= limpieza_config_db.get("general_meses",6)*30: debe=True
-    except: debe=True
-    if debe:
-        return ejecutar_limpieza_inteligente(forzado=False)
-    return None
-
 
 
 @app.get("/api/db-status")
@@ -434,21 +312,471 @@ def ce(e: dict):
     else: e["password"]=hash_pass(e["password"])
     e["activo"]=e.get("activo",True)
     if "tiempo_comida" not in e: e["tiempo_comida"]=120
-    if "telefono" not in e: e["telefono"]=""
-    if "sueldo_hora" not in e: e["sueldo_hora"]=config_admin_db.get("sueldo_default",50)
-    else:
-        try: e["sueldo_hora"]=float(e["sueldo_hora"])
-        except: e["sueldo_hora"]=50
-    # Soporte multi-roles
-    if "roles" in e and isinstance(e["roles"], list) and len(e["roles"])>0:
-        e["roles"] = [r for r in e["roles"] if r in roles_custom_db]
-        e["rol"] = e["roles"][0] if e["roles"] else "empleado"
-    else:
-        if "rol" not in e: e["rol"]="empleado"
-        if e["rol"] not in roles_custom_db: e["rol"]="empleado"
-        e["roles"] = [e["rol"]]
-    if "foto" not in e: e["foto"]=""
-    empleados_db[e["id"]]=e
+    empleados_db[e["id"]]=e; save_db(); return e
+@app.put("/empleados/{eid}")
+def upd(eid: str, data: dict):
+    if eid not in empleados_db: raise HTTPException(404)
+    if "password" in data and data["password"]: data["password"]=hash_pass(data["password"])
+    empleados_db[eid].update(data); save_db(); return empleados_db[eid]
+@app.put("/empleados/{eid}/toggle")
+def toggle(eid: str):
+    if eid not in empleados_db: raise HTTPException(404)
+    empleados_db[eid]["activo"]=not empleados_db[eid].get("activo",True); save_db(); return empleados_db[eid]
+@app.delete("/empleados/{eid}")
+def delete_emp(eid: str):
+    if eid in empleados_db: empleados_db[eid]["activo"]=False; empleados_db[eid]["eliminado"]=True; empleados_db[eid]["fecha_eliminado"]=datetime.now().strftime("%Y-%m-%d %H:%M:%S"); save_db()
+    return {"ok":True}
+@app.post("/vacaciones/solicitar")
+def solicitar_vac(data: dict):
+    vac={"id":str(uuid.uuid4())[:8],"empleado_id":data.get("empleado_id"),"tipo":data.get("tipo","vacaciones"),"fecha_inicio":data.get("fecha_inicio"),"fecha_fin":data.get("fecha_fin"),"motivo":data.get("motivo",""),"estado":"pendiente","fecha_solicitud":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"nombre":empleados_db.get(data.get("empleado_id"),{}).get("nombre","")}
+    vacaciones_db.append(vac); save_db(); return vac
+@app.get("/vacaciones/{eid}")
+def vac_emp(eid: str): return [v for v in vacaciones_db if v["empleado_id"]==eid][::-1]
+@app.get("/vacaciones")
+def vac_todos(): return vacaciones_db[::-1]
+@app.put("/vacaciones/{vid}/estado")
+def vac_estado(vid: str, data: dict):
+    v=next((x for x in vacaciones_db if x["id"]==vid), None)
+    if not v: raise HTTPException(404)
+    v["estado"]=data.get("estado","pendiente"); save_db(); return v
+@app.post("/justificantes/subir")
+def subir_just(data: dict):
+    j={"id":str(uuid.uuid4())[:8],"empleado_id":data.get("empleado_id"),"fecha":data.get("fecha"),"tipo":data.get("tipo","enfermedad"),"motivo":data.get("motivo",""),"foto":data.get("foto",""),"estado":"pendiente","fecha_subida":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"nombre":empleados_db.get(data.get("empleado_id"),{}).get("nombre","")}
+    justificantes_db.append(j); save_db(); return j
+@app.get("/justificantes/{eid}")
+def just_emp(eid: str): return [j for j in justificantes_db if j["empleado_id"]==eid][::-1]
+@app.get("/justificantes")
+def just_todos(): return justificantes_db[::-1]
+@app.put("/justificantes/{jid}/estado")
+def just_estado(jid: str, data: dict):
+    j=next((x for x in justificantes_db if x["id"]==jid), None)
+    if not j: raise HTTPException(404)
+    j["estado"]=data.get("estado","pendiente"); save_db(); return j
+@app.post("/chat/enviar")
+def chat_enviar(data: dict):
+    msg={"id":str(uuid.uuid4())[:8],"de":data.get("de"),"para":data.get("para"),"mensaje":data.get("mensaje"),"fecha":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    chat_db.append(msg); save_db(); return msg
+@app.get("/chat/{eid}")
+def chat_get(eid: str): return [m for m in chat_db if m["de"]==eid or m["para"]==eid or eid=="admin"][-100:]
+@app.get("/chat")
+def chat_all(): return chat_db[-100:]
+@app.post("/panico/sos")
+def sos(data: dict):
+    alerta={"id":str(uuid.uuid4())[:6],"empleado_id":data.get("empleado_id"),"nombre":empleados_db.get(data.get("empleado_id"),{}).get("nombre",""),"lat":data.get("lat"),"lng":data.get("lng"),"mensaje":data.get("mensaje","¡EMERGENCIA SOS!"),"fecha":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"tipo":"panico"}
+    panico_db.append(alerta); save_db(); return {"ok":True}
+@app.get("/panico/todos")
+def panico_todos(): return panico_db[::-1]
+@app.get("/admin/dashboard")
+def dashboard():
+    hoy=datetime.now().strftime("%Y-%m-%d"); mes=datetime.now().strftime("%Y-%m")
+    hoy_asist=[a for a in asistencias_db if a["fecha_dia"]==hoy]; mes_asist=[a for a in asistencias_db if a.get("fecha")==mes]
+    total_emp=len([e for e in empleados_db.values() if e.get("activo") and not e.get("eliminado")])
+    presentes_hoy=len([a for a in hoy_asist if a.get("entrada")])
+    ranking=[]
+    for eid, emp in empleados_db.items():
+        if not emp.get("activo") or emp.get("eliminado"): continue
+        asist=[a for a in asistencias_db if a["empleado_id"]==eid and a.get("fecha")==mes]
+        total_ret=sum([a.get("retardo_entrada",0)+a.get("retardo_comida",0) for a in asist])
+        ranking.append({"id":eid,"nombre":emp.get("nombre"),"retardos":total_ret,"dias":len(asist),"horas":round(sum([a.get("horas_trabajadas",0) for a in asist]),1)})
+    ranking=sorted(ranking, key=lambda x: x["retardos"])
+    return {"fecha":hoy,"mes":mes,"total_empleados":total_emp,"presentes_hoy":presentes_hoy,"ausentes_hoy":total_emp-presentes_hoy,"retardos_hoy":len([a for a in hoy_asist if a.get("retardo_entrada",0)>0]),"horas_mes":round(sum([a.get("horas_trabajadas",0) for a in mes_asist]),1),"ranking":ranking[:10],"gps_alertas_hoy":len([a for a in alertas_db if a.get("tipo")=="gps_fuera" and hoy in a.get("fecha","")]),"vacaciones_pendientes":len([v for v in vacaciones_db if v["estado"]=="pendiente"]),"justificantes_pend":len([j for j in justificantes_db if j["estado"]=="pendiente"]),"panico_hoy":len([p for p in panico_db if hoy in p.get("fecha","")])}
+@app.get("/admin/reportes-graficas")
+def reportes():
+    from collections import defaultdict
+    mes=datetime.now().strftime("%Y-%m")
+    por_dia=defaultdict(int); por_empleado=defaultdict(float)
+    for a in asistencias_db:
+        if a.get("fecha")==mes:
+            por_dia[a.get("fecha_dia")] += a.get("retardo_entrada",0)+a.get("retardo_comida",0)
+            por_empleado[a["empleado_id"]] += a.get("horas_trabajadas",0)
+    return {"retardos_por_dia":{"labels":list(por_dia.keys())[-7:], "valores":list(por_dia.values())[-7:]}, "horas_por_empleado":{"labels":[empleados_db.get(k,{}).get("nombre",k) for k in por_empleado.keys()], "valores":list(por_empleado.values())}, "total_asistencias_mes":len([a for a in asistencias_db if a.get("fecha")==mes])}
+@app.get("/admin/backup")
+def backup():
+    return {"fecha":datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "database": {"sucursales":sucursales_db,"empleados":empleados_db,"asistencias":asistencias_db,"evaluaciones":evaluaciones_db,"vacaciones":vacaciones_db,"justificantes":justificantes_db,"gps_logs":gps_logs_db,"alertas":alertas_db}, "total_empleados":len(empleados_db),"total_asistencias":len(asistencias_db)}
+@app.get("/asistencia/hoy/{eid}")
+def asistencia_hoy(eid: str):
+    hoy=datetime.now().strftime("%Y-%m-%d")
+    reg = next((a for a in asistencias_db if a["empleado_id"]==eid and a["fecha_dia"]==hoy), None)
+    tiempo = empleados_db.get(eid,{}).get("tiempo_comida",120)
+    dias=["lunes","martes","miercoles","jueves","viernes","sabado","domingo"]
+    suc_id=empleados_db.get(eid,{}).get("horario",{}).get(dias[datetime.now().weekday()],"")
+    suc=sucursales_db.get(suc_id, {})
+    base={"empleado_id":eid,"fecha_dia":hoy,"tiempo_permitido":tiempo,"sucursal":suc}
+    if not reg: return {**base,"estado":"sin_entrada","siguiente":"entrada","texto_boton":"📍 Registrar ENTRADA (Activa GPS)","color":"#10b981","gps_activo":False}
+    if not reg.get("entrada"): return {**reg,**base,"estado":"sin_entrada","siguiente":"entrada","texto_boton":"📍 Registrar ENTRADA (Activa GPS)","color":"#10b981","gps_activo":False}
+    if not reg.get("salida_comida"): return {**reg,**base,"estado":"trabajando","siguiente":"salida_comida","texto_boton":"🍔 Salida a COMER (Desactiva GPS)","color":"#f59e0b","gps_activo":True}
+    if not reg.get("regreso_comida"): return {**reg,**base,"estado":"comiendo","siguiente":"regreso_comida","texto_boton":"↩️ Regreso de COMIDA (Reactiva GPS)","color":"#6366f1","gps_activo":False}
+    if not reg.get("salida_final"): return {**reg,**base,"estado":"trabajando_tarde","siguiente":"salida_final","texto_boton":"🏠 SALIDA FINAL (Desactiva GPS)","color":"#ef4444","gps_activo":True}
+    return {**reg,**base,"estado":"completo","siguiente":"completo","texto_boton":"✅ Jornada COMPLETADA","color":"#64748b","gps_activo":False}
+@app.post("/asistencia/registrar")
+def registrar(data: dict):
+    eid=data.get("empleado_id"); tipo=data.get("tipo"); lat=data.get("lat"); lng=data.get("lng")
+    if eid not in empleados_db: raise HTTPException(404)
+    TIEMPO_COMIDA_MAX = empleados_db[eid].get("tiempo_comida", 120)
+    ahora=datetime.now(); hoy=ahora.strftime("%Y-%m-%d"); hora=ahora.strftime("%H:%M:%S")
+    reg = next((a for a in asistencias_db if a["empleado_id"]==eid and a["fecha_dia"]==hoy), None)
+    if not reg:
+        reg={"empleado_id":eid,"fecha":ahora.strftime("%Y-%m"),"fecha_dia":hoy,"entrada":None,"salida_comida":None,"regreso_comida":None,"salida_final":None,"retardo_entrada":0,"retardo_comida":0,"horas_trabajadas":0,"min_comida":0,"tiempo_permitido":TIEMPO_COMIDA_MAX}
+        asistencias_db.append(reg)
+    else: reg["tiempo_permitido"]=TIEMPO_COMIDA_MAX
+    dias=["lunes","martes","miercoles","jueves","viernes","sabado","domingo"]
+    suc_id=empleados_db[eid].get("horario",{}).get(dias[ahora.weekday()],""); suc=sucursales_db.get(suc_id)
+    def check_geocerca(lat_emp, lng_emp):
+        if not suc: return True, 0
+        s_lat=suc.get("lat"); s_lng=suc.get("lng"); radio=suc.get("radio",200)
+        if s_lat is None or s_lng is None: return True, 0
+        try: d=distancia_m(float(lat_emp), float(lng_emp), float(s_lat), float(s_lng)); return d <= float(radio), d
+        except: return True,0
+    if tipo=="entrada":
+        if reg["entrada"]: raise HTTPException(400, "Ya entrada")
+        retardo=0
+        if suc:
+            try: h,m=map(int,suc.get("hora_entrada","08:00").split(":")); ent=ahora.replace(hour=h,minute=m,second=0,microsecond=0); retardo=max(0, round((ahora-ent).total_seconds()/60,1))
+            except: pass
+        if lat and lng and suc and suc.get("lat"):
+            ok, dist = check_geocerca(lat,lng)
+            if not ok: alertas_db.append({"id":str(uuid.uuid4())[:6],"empleado_id":eid,"mensaje":f"🚨 Entrada FUERA de {suc.get('nombre')} - a {int(dist)}m","fecha":ahora.strftime("%Y-%m-%d %H:%M"),"tipo":"gps_fuera","distancia":dist,"lat":lat,"lng":lng})
+        reg["entrada"]=hora; reg["retardo_entrada"]=retardo; reg["sucursal_id"]=suc_id
+    elif tipo=="salida_comida":
+        if not reg["entrada"]: raise HTTPException(400, "Primero entrada")
+        if reg["salida_comida"]: raise HTTPException(400, "Ya salida comida")
+        reg["salida_comida"]=hora
+    elif tipo=="regreso_comida":
+        if not reg["salida_comida"]: raise HTTPException(400, "Primero salida comida")
+        if reg["regreso_comida"]: raise HTTPException(400, "Ya regreso")
+        reg["regreso_comida"]=hora
+        try:
+            from datetime import datetime as dt
+            sc = dt.strptime(reg["salida_comida"], "%H:%M:%S"); rc = dt.strptime(hora, "%H:%M:%S")
+            diff_min = (rc - sc).total_seconds()/60
+            if diff_min < 0: diff_min += 1440
+            reg["min_comida"]=round(diff_min,1); reg["retardo_comida"]=round(diff_min - TIEMPO_COMIDA_MAX,1) if diff_min > TIEMPO_COMIDA_MAX else 0
+        except: pass
+    elif tipo=="salida_final":
+        if not reg["regreso_comida"] and reg["salida_comida"]: raise HTTPException(400, "Primero regreso")
+        if not reg["entrada"]: raise HTTPException(400, "Primero entrada")
+        if reg["salida_final"]: raise HTTPException(400, "Ya salida final")
+        reg["salida_final"]=hora; reg["firma"]=data.get("firma")
+        try:
+            from datetime import datetime as dt
+            e = dt.strptime(reg["entrada"], "%H:%M:%S"); s = dt.strptime(hora, "%H:%M:%S")
+            diff = (s - e).total_seconds()/3600
+            if diff < 0: diff += 24
+            if reg["salida_comida"] and reg["regreso_comida"]:
+                sc = dt.strptime(reg["salida_comida"], "%H:%M:%S"); rc = dt.strptime(reg["regreso_comida"], "%H:%M:%S")
+                comida = (rc - sc).total_seconds()/3600
+                if comida < 0: comida += 24
+                diff -= comida
+            reg["horas_trabajadas"]=round(diff,2)
+        except: pass
+    else: raise HTTPException(400, "Tipo invalido")
+    save_db(); return reg
+@app.post("/gps/update")
+def gps_update(data: dict):
+    limpiar_gps_antiguo(); eid=data.get("empleado_id"); lat=data.get("lat"); lng=data.get("lng")
+    if eid not in empleados_db: raise HTTPException(404)
+    ahora=datetime.now(); hoy=ahora.strftime("%Y-%m-%d")
+    reg = next((a for a in asistencias_db if a["empleado_id"]==eid and a["fecha_dia"]==hoy), None)
+    if not reg or not reg.get("entrada") or reg.get("salida_final"): return {"ok":True}
+    if reg.get("salida_comida") and not reg.get("regreso_comida"): return {"ok":True}
+    dias=["lunes","martes","miercoles","jueves","viernes","sabado","domingo"]
+    suc_id=empleados_db[eid].get("horario",{}).get(dias[ahora.weekday()],""); suc=sucursales_db.get(suc_id)
+    if not suc or not suc.get("lat"):
+        gps_logs_db.append({"empleado_id":eid,"lat":lat,"lng":lng,"fecha":ahora.strftime("%Y-%m-%d %H:%M:%S"),"fecha_dia":hoy,"hora":ahora.strftime("%H:%M:%S"),"sucursal_id":suc_id}); save_db(); return {"ok":True,"dentro":True}
+    try:
+        dist=distancia_m(float(lat),float(lng),float(suc["lat"]),float(suc["lng"])); dentro=dist <= float(suc.get("radio",200))
+        gps_logs_db.append({"empleado_id":eid,"lat":lat,"lng":lng,"distancia":round(dist,1),"dentro":dentro,"fecha":ahora.strftime("%Y-%m-%d %H:%M:%S"),"fecha_dia":hoy,"hora":ahora.strftime("%H:%M:%S"),"sucursal_id":suc_id,"empleado_nombre":empleados_db[eid]["nombre"]})
+        if not dentro: alertas_db.append({"id":str(uuid.uuid4())[:6],"empleado_id":eid,"mensaje":f"🚨 GPS: {empleados_db[eid]['nombre']} se alejó {int(dist)}m de {suc.get('nombre')}","fecha":ahora.strftime("%Y-%m-%d %H:%M:%S"),"tipo":"gps_fuera","distancia":dist,"lat":lat,"lng":lng})
+        save_db(); return {"ok":True,"dentro":dentro,"distancia":dist}
+    except: return {"ok":False}
+@app.get("/gps/ruta/{eid}")
+def gps_ruta(eid: str, dias: int = 60):
+    limpiar_gps_antiguo(); limite = datetime.now() - timedelta(days=dias)
+    logs = [g for g in gps_logs_db if g["empleado_id"]==eid]
+    def f_reciente(f_str):
+        try: return datetime.strptime(f_str, "%Y-%m-%d %H:%M:%S") >= limite
+        except: return True
+    logs = [l for l in logs if f_reciente(l.get("fecha",""))]
+    por_dia={}
+    for l in logs:
+        d=l.get("fecha_dia","sin_fecha")
+        if d not in por_dia: por_dia[d]=[]
+        por_dia[d].append(l)
+    return {"empleado_id":eid,"dias_guardados":dias,"total_puntos":len(logs),"ruta_por_dia":por_dia,"logs":logs[::-1][:500]}
+@app.get("/gps/ruta-todos")
+def gps_ruta_todos(dias: int = 60):
+    limpiar_gps_antiguo(); limite = datetime.now() - timedelta(days=dias)
+    def f_reciente(f_str):
+        try: return datetime.strptime(f_str, "%Y-%m-%d %H:%M:%S") >= limite
+        except: return True
+    logs=[l for l in gps_logs_db if f_reciente(l.get("fecha",""))]
+    return {"dias_guardados":dias,"total_puntos":len(logs),"logs":logs[::-1][:500]}
+@app.get("/gps/export-csv/{eid}")
+def export_csv(eid: str, dias: int = 60):
+    import csv, io; limite = datetime.now() - timedelta(days=dias)
+    logs=[g for g in gps_logs_db if g["empleado_id"]==eid and datetime.strptime(g.get("fecha","2000-01-01 00:00:00"), "%Y-%m-%d %H:%M:%S") >= limite]
+    output=io.StringIO(); writer=csv.writer(output); writer.writerow(["empleado_id","nombre","fecha","hora","fecha_dia","lat","lng","distancia_m","dentro_geocerca","sucursal"])
+    for l in logs: writer.writerow([l.get("empleado_id"),l.get("empleado_nombre",""),l.get("fecha"),l.get("hora",""),l.get("fecha_dia"),l.get("lat"),l.get("lng"),l.get("distancia",""),l.get("dentro",""),l.get("sucursal_id","")])
+    return {"empleado_id":eid,"dias":dias,"csv":output.getvalue(),"filename":f"ruta_{eid}_{dias}dias.csv"}
+@app.get("/gps/alertas")
+def gps_alertas(): return [a for a in alertas_db if a.get("tipo")=="gps_fuera"][::-1]
+@app.post("/evaluaciones")
+def crear_eval(data: dict):
+    hoy=datetime.now(); eid=data.get("empleado_id"); cals=data.get("calificaciones",{}); total=0
+    for i in range(1,12):
+        if i in [6,12]: continue
+        try: v=int(cals.get(str(i),0))
+        except: v=0
+        total+=v
+    mes=hoy.strftime("%Y-%m")
+    if any(ev["empleado_id"]==eid and ev["mes"]==mes for ev in evaluaciones_db): raise HTTPException(400, "Ya evaluado")
+    nivel="Necesita Mejorar"
+    if total==100: nivel="EXCELENTE 🌟"
+    elif total>=90: nivel="Muy Bueno"
+    elif total>=80: nivel="Bueno"
+    nueva={"id":len(evaluaciones_db)+1,"empleado_id":eid,"empleado_nombre":empleados_db[eid]["nombre"],"fecha":hoy.strftime("%Y-%m-%d %H:%M"),"mes":mes,"calificaciones":cals,"total":total,"nivel":nivel,"firma":data.get("firma")}
+    evaluaciones_db.append(nueva); save_db(); return nueva
+@app.get("/evaluaciones")
+def list_ev(): return evaluaciones_db
+@app.get("/empleado/{eid}/historial")
+def hist(eid: str): return [e for e in evaluaciones_db if e["empleado_id"]==eid]
+@app.get("/alertas/{eid}")
+def al(eid: str): return [a for a in alertas_db if a["empleado_id"]==eid or eid=="admin"][::-1][:50]
+@app.get("/asistencias/{eid}")
+def asis(eid: str): return [a for a in asistencias_db if a["empleado_id"]==eid][::-1]
+@app.get("/empleado/{eid}/retardos-mes")
+def retardos_mes(eid: str):
+    mes=datetime.now().strftime("%Y-%m")
+    asist=[a for a in asistencias_db if a["empleado_id"]==eid and a.get("fecha","")==mes]
+    total_entrada=sum([a.get("retardo_entrada",0) for a in asist]); total_comida=sum([a.get("retardo_comida",0) for a in asist]); total_horas=round(sum([a.get("horas_trabajadas",0) for a in asist]),2)
+    retardos=[]
+    for a in asist:
+        if a.get("retardo_entrada",0)>0 or a.get("retardo_comida",0)>0:
+            retardos.append({"fecha_dia":a.get("fecha_dia"),"entrada":a.get("entrada"),"retardo_entrada":a.get("retardo_entrada",0),"salida_comida":a.get("salida_comida"),"regreso_comida":a.get("regreso_comida"),"min_comida":a.get("min_comida",0),"tiempo_permitido":a.get("tiempo_permitido",120),"retardo_comida":a.get("retardo_comida",0)})
+    return {"empleado_id":eid,"mes":mes,"total_retardo_entrada":round(total_entrada,1),"total_retardo_comida":round(total_comida,1),"total_retardos":round(total_entrada+total_comida,1),"total_horas":total_horas,"detalles":retardos,"asistencias":asist}
+@app.get("/admin/retardos-todos")
+def retardos_todos():
+    mes=datetime.now().strftime("%Y-%m"); result=[]
+    for eid, emp in empleados_db.items():
+        if emp.get("eliminado"): continue
+        asist=[a for a in asistencias_db if a["empleado_id"]==eid and a.get("fecha","")==mes]
+        if len(asist)>0:
+            total_e=sum([a.get("retardo_entrada",0) for a in asist]); total_c=sum([a.get("retardo_comida",0) for a in asist])
+            result.append({"empleado_id":eid,"nombre":emp.get("nombre"),"total_entrada":round(total_e,1),"total_comida":round(total_c,1),"total":round(total_e+total_c,1),"dias_trabajados":len(asist),"horas_mes":round(sum([a.get("horas_trabajadas",0) for a in asist]),1)})
+    return sorted(result, key=lambda x: x["total"], reverse=True)
+@app.get("/admin/export-excel")
+def export_excel():
+    import csv, io; output=io.StringIO(); writer=csv.writer(output); writer.writerow(["empleado_id","nombre","mes","fecha_dia","entrada","retardo_entrada","salida_comida","regreso_comida","min_comida","retardo_comida","salida_final","horas_trabajadas","horas_extra","sucursal"])
+    mes=datetime.now().strftime("%Y-%m")
+    for a in asistencias_db:
+        if mes in a.get("fecha",""):
+            emp=empleados_db.get(a["empleado_id"],{}); horas=a.get("horas_trabajadas",0); extra=round(horas-8,2) if horas>8 else 0
+            writer.writerow([a["empleado_id"],emp.get("nombre",""),a.get("fecha"),a.get("fecha_dia"),a.get("entrada"),a.get("retardo_entrada"),a.get("salida_comida"),a.get("regreso_comida"),a.get("min_comida"),a.get("retardo_comida"),a.get("salida_final"),a.get("horas_trabajadas"),extra,a.get("sucursal_id")])
+    return {"csv":output.getvalue(),"filename":f"nomina_{mes}.csv"}
+@app.get("/admin/audit")
+def audit_get(): return audit_db[::-1][:100]
+@app.get("/admin/papelera")
+def papelera(): return [e for e in empleados_db.values() if e.get("eliminado")]
+
+@app.post("/reportes-volanteo")
+def crear_reporte_volanteo(data: dict):
+    rep={
+        "id": str(uuid.uuid4())[:8],
+        "empleado_id": data.get("empleado_id"),
+        "nombre": empleados_db.get(data.get("empleado_id"),{}).get("nombre",""),
+        "sucursal_id": data.get("sucursal_id"),
+        "sucursal_nombre": sucursales_db.get(data.get("sucursal_id"),{}).get("nombre", data.get("sucursal_id","")),
+        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "fecha_dia": datetime.now().strftime("%Y-%m-%d"),
+        "manana_volantearon": data.get("manana_volantearon",""),
+        "manana_quien": data.get("manana_quien",""),
+        "manana_nombre": data.get("manana_nombre",""),
+        "tarde_volantearon": data.get("tarde_volantearon",""),
+        "tarde_quien": data.get("tarde_quien",""),
+        "tarde_nombre": data.get("tarde_nombre",""),
+        "comentario": data.get("comentario","")
+    }
+    reportes_volanteo_db.append(rep)
+    save_db()
+    return rep
+
+@app.get("/reportes-volanteo")
+def list_reportes_volanteo():
+    return reportes_volanteo_db[::-1]
+
+@app.get("/reportes-volanteo/{eid}")
+def list_reportes_volanteo_emp(eid: str):
+    return [r for r in reportes_volanteo_db if r["empleado_id"]==eid][::-1]
+
+@app.get("/admin/compañeros-hoy/{suc_id}")
+
+def companeros_hoy(suc_id: str):
+    hoy=datetime.now().strftime("%Y-%m-%d"); dias=["lunes","martes","miercoles","jueves","viernes","sabado","domingo"]; dia_hoy=dias[datetime.now().weekday()]; trabajando=[]
+    for eid, emp in empleados_db.items():
+        if not emp.get("activo") or emp.get("eliminado"): continue
+        hor=emp.get("horario",{}).get(dia_hoy,"")
+        if hor==suc_id or suc_id in emp.get("sucursales_ids",[]):
+            asist=next((a for a in asistencias_db if a["empleado_id"]==eid and a["fecha_dia"]==hoy), None)
+            trabajando.append({"id":eid,"nombre":emp.get("nombre"),"puesto":emp.get("puesto"),"entrada":asist.get("entrada") if asist else None,"estado":"presente" if asist and asist.get("entrada") else "ausente"})
+    return trabajando
+
+def audit_log(usuario, accion, detalle):
+    audit_db.append({"fecha":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"usuario":usuario,"accion":accion,"detalle":detalle})
+    if len(audit_db)>500: audit_db.pop(0)
+    save_db()
+DIAS_RETENCION=60
+def get_next_id():
+    max_num=0
+    for eid in empleados_db.keys():
+        try:
+            if eid.startswith("EMP"): num=int(eid.replace("EMP","")); max_num=max(max_num,num)
+        except: pass
+    return f"EMP{max_num+1:04d}"
+def distancia_m(lat1, lon1, lat2, lon2):
+    try:
+        R=6371000; phi1=math.radians(lat1); phi2=math.radians(lat2); dphi=math.radians(lat2-lat1); dlambda=math.radians(lon2-lon1); a=math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2; c=2*math.atan2(math.sqrt(a), math.sqrt(1-a)); return R*c
+    except: return 0
+def limpiar_gps_antiguo():
+    limite = datetime.now() - timedelta(days=DIAS_RETENCION)
+    def es_reciente(f):
+        try: return datetime.strptime(f, "%Y-%m-%d %H:%M:%S") >= limite
+        except: return True
+    gps_logs_db[:] = [g for g in gps_logs_db if es_reciente(g.get("fecha",""))]; alertas_db[:] = [a for a in alertas_db if a.get("tipo")!="gps_fuera" or es_reciente(a.get("fecha",""))]
+
+
+
+@app.get("/api/permisos")
+def get_permisos(): return permisos_db
+@app.post("/api/permisos")
+def save_permisos(data: dict):
+    global permisos_db; permisos_db=data; save_db(); return {"ok": True}
+@app.get("/api/config-admin")
+def get_config_admin(): return config_admin_db
+@app.post("/api/config-admin")
+def save_config_admin(data: dict):
+    global config_admin_db; config_admin_db.update(data); save_db(); return config_admin_db
+@app.get("/api/nomina/{mes}")
+def calcular_nomina(mes: str):
+    result=[]
+    for eid, emp in empleados_db.items():
+        if not emp.get("activo") or emp.get("eliminado"): continue
+        sueldo=float(emp.get("sueldo_hora", config_admin_db.get("sueldo_default",50)))
+        asist_mes=[a for a in asistencias_db if a["empleado_id"]==eid and a.get("fecha","").startswith(mes)]
+        horas=sum([a.get("horas_trabajadas",0) for a in asist_mes])
+        retardos=sum([a.get("retardo_entrada",0)+a.get("retardo_comida",0) for a in asist_mes])
+        dias=len(asist_mes)
+        bono=0
+        if retardos==0 and dias>=20: bono=float(config_admin_db.get("bono_puntualidad",500))
+        total=round(horas*sueldo+bono,2)
+        result.append({"empleado_id":eid,"nombre":emp.get("nombre"),"horas":round(horas,2),"retardos":retardos,"dias":dias,"sueldo_hora":sueldo,"bono":bono,"total":total,"telefono":emp.get("telefono","")})
+    return sorted(result, key=lambda x: x["total"], reverse=True)
+@app.get("/api/reporte-sucursales/{mes}")
+def reporte_suc(mes: str):
+    res=[]
+    for sid, suc in sucursales_db.items():
+        emps_suc=[e for e in empleados_db.values() if sid in e.get("sucursales_ids",[]) or sid in e.get("horario",{}).values()]
+        asist=[a for a in asistencias_db if a.get("sucursal_id")==sid and a.get("fecha","").startswith(mes)]
+        horas=sum([a.get("horas_trabajadas",0) for a in asist])
+        retardos=sum([a.get("retardo_entrada",0) for a in asist])
+        res.append({"sucursal_id":sid,"nombre":suc.get("nombre"),"empleados":len(emps_suc),"horas_mes":round(horas,1),"retardos_mes":retardos,"promedio_horas":round(horas/len(emps_suc),1) if emps_suc else 0})
+    return sorted(res, key=lambda x: x["horas_mes"], reverse=True)
+@app.get("/api/calendario/{eid}/{mes}")
+def calendario_emp(eid: str, mes: str):
+    import calendar
+    try:
+        year, m = map(int, mes.split("-"))
+        _, last_day = calendar.monthrange(year, m)
+        dias=[]
+        for d in range(1, last_day+1):
+            fecha=f"{year}-{m:02d}-{d:02d}"
+            asist=next((a for a in asistencias_db if a["empleado_id"]==eid and a.get("fecha_dia")==fecha), None)
+            vac=next((v for v in vacaciones_db if v["empleado_id"]==eid and v["fecha_inicio"]<=fecha<=v["fecha_fin"] and v["estado"]=="aprobado"), None)
+            if vac: dias.append({"dia":d,"fecha":fecha,"estado":"vacaciones","color":"#8b5cf6","entrada":None})
+            elif asist:
+                if asist.get("retardo_entrada",0)>0 or asist.get("retardo_comida",0)>0: dias.append({"dia":d,"fecha":fecha,"estado":"retardo","entrada":asist.get("entrada"),"color":"#f59e0b"})
+                else: dias.append({"dia":d,"fecha":fecha,"estado":"presente","entrada":asist.get("entrada"),"color":"#10b981"})
+            else: dias.append({"dia":d,"fecha":fecha,"estado":"ausente","color":"#1e293b"})
+        return dias
+    except Exception as e:
+        raise HTTPException(400, str(e))
+@app.post("/api/notificar-whatsapp")
+def notificar_whatsapp(data: dict):
+    notificaciones_db.append({"id":str(uuid.uuid4())[:6],"para":data.get("para"),"mensaje":data.get("mensaje"),"tipo":data.get("tipo","info"),"fecha":datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+    save_db()
+    tel=data.get("para","").replace("+","").replace(" ","")
+    link=f"https://wa.me/{tel}?text={data.get('mensaje','')}"
+    return {"ok": True, "link": link}
+@app.get("/api/anti-trampa/log")
+def anti_trampa_log():
+    sospechosos=[]
+    for eid in empleados_db:
+        logs=[g for g in gps_logs_db if g.get("empleado_id")==eid]
+        if len(logs)>=3:
+            if len(set([f"{l.get('lat')},{l.get('lng')}" for l in logs[-5:]]))==1:
+                sospechosos.append({"empleado_id":eid,"nombre":empleados_db[eid].get("nombre"),"motivo":"Ubicación idéntica 5 veces (posible GPS falso)","fecha":logs[-1].get("fecha")})
+    return sospechosos
+@app.get("/api/empleado/{eid}/perfil")
+def perfil_emp(eid: str):
+    emp=empleados_db.get(eid)
+    if not emp: raise HTTPException(404)
+    asist_mes=[a for a in asistencias_db if a["empleado_id"]==eid]
+    horas_total=sum([a.get("horas_trabajadas",0) for a in asist_mes])
+    return {"empleado":emp,"horas_total":horas_total,"asistencias":len(asist_mes),"foto":perfil_fotos_db.get(eid,"")}
+@app.post("/api/empleado/{eid}/foto")
+def subir_foto(eid: str, data: dict):
+    perfil_fotos_db[eid]=data.get("foto","")[:500000]
+    if eid in empleados_db: empleados_db[eid]["foto"]=data.get("foto","")[:500000]
+    save_db()
+    return {"ok": True}
+
+
+@app.get("/api/db-status")
+def db_status():
+    tipo = "PostgreSQL" if DATABASE_URL else "SQLite" if HAS_SQLALCHEMY else "JSON"
+    return {
+        "tipo": tipo,
+        "url": DATABASE_URL[:30]+"..." if DATABASE_URL else DB_SQLITE,
+        "sqlite_existe": os.path.exists(DB_SQLITE),
+        "json_existe": os.path.exists(DB_FILE),
+        "empleados": len(empleados_db),
+        "empresas": len(empresa_db) if isinstance(empresa_db, dict) else 1,
+        "mensaje": "Base de datos conectada ✅" if tipo!="JSON" else "Usando JSON temporal ⚠️ - Crea PostgreSQL en Render"
+    }
+
+@app.post("/api/migrar-a-db")
+def migrar_a_db():
+    if not HAS_SQLALCHEMY:
+        raise HTTPException(400, "SQLAlchemy no instalado")
+    try:
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        # Migrar empresas y empleados actuales a DB real
+        count=0
+        for eid, emp in empleados_db.items():
+            exists = session.execute(text(f"SELECT id FROM empleados WHERE id='{eid}'")).fetchone()
+            if not exists:
+                session.execute(text(f"INSERT INTO empleados (id, data) VALUES (:id, :data)"), {"id": eid, "data": json.dumps(emp)})
+                count+=1
+        session.commit()
+        return {"ok": True, "migrados": count, "mensaje": f"Migrados {count} empleados a {DB_SQLITE if not DATABASE_URL else 'PostgreSQL'}"}
+    except Exception as e:
+        raise HTTPException(500, f"Error migración: {e}")
+
+@app.put("/api/empresa-info")
+def actualizar_empresa(data: dict):
+    if "info" not in empresa_db:
+        empresa_db["info"]={}
+    empresa_db["info"].update({
+        "nombre_admin": data.get("nombre_admin", empresa_db["info"].get("nombre_admin","")),
+        "usuario": data.get("usuario", empresa_db["info"].get("usuario","")),
+        "empresa": data.get("empresa", empresa_db["info"].get("empresa","")),
+        "direccion": data.get("direccion", empresa_db["info"].get("direccion","")),
+        "correo": data.get("correo", empresa_db["info"].get("correo","")),
+        "telefono": data.get("telefono", empresa_db["info"].get("telefono","")),
+        "logo": data.get("logo", empresa_db["info"].get("logo","")),
+        "slogan": data.get("slogan", empresa_db["info"].get("slogan","")),
+        "color": data.get("color", empresa_db["info"].get("color","#6366f1"))
+    })
     save_db()
     return empresa_db["info"]
 
@@ -651,52 +979,7 @@ def sos(data: dict):
     panico_db.append(alerta); save_db(); return {"ok":True}
 @app.get("/panico/todos")
 def panico_todos(): return panico_db[::-1]
-
-@app.get("/api/limpieza/status")
-def limpieza_status():
-    check = check_limpieza_automatica()
-    total_registros = len(gps_logs_db) + len(asistencias_db) + len(alertas_db) + len(chat_db) + len(panico_db) + len(evaluaciones_db)
-    # Calcular próxima limpieza
-    ahora = datetime.now()
-    try:
-        ultima_gps = datetime.strptime(limpieza_config_db.get("ultima_limpieza_gps","2000-01-01 00:00:00"), "%Y-%m-%d %H:%M:%S")
-        prox_gps = ultima_gps + timedelta(days=limpieza_config_db.get("gps_meses",3)*30)
-    except:
-        prox_gps = ahora + timedelta(days=limpieza_config_db.get("gps_meses",3)*30)
-    try:
-        ultima_gen = datetime.strptime(limpieza_config_db.get("ultima_limpieza_general","2000-01-01 00:00:00"), "%Y-%m-%d %H:%M:%S")
-        prox_gen = ultima_gen + timedelta(days=limpieza_config_db.get("general_meses",6)*30)
-    except:
-        prox_gen = ahora + timedelta(days=limpieza_config_db.get("general_meses",6)*30)
-    
-    return {
-        "config": limpieza_config_db,
-        "total_registros_actual": total_registros,
-        "gps_actual": len(gps_logs_db),
-        "asistencias_actual": len(asistencias_db),
-        "proxima_limpieza_gps": prox_gps.strftime("%Y-%m-%d"),
-        "proxima_limpieza_general": prox_gen.strftime("%Y-%m-%d"),
-        "ultima_ejecucion_auto": check,
-        "conserva_siempre": ["empresas", "empleados", "sucursales", "roles", "permisos", "fotos_perfil", "config_admin"],
-        "borra_gps_3_meses": ["gps_logs", "alertas_gps"],
-        "borra_general_6_meses": ["asistencias", "alertas", "chat", "panico", "evaluaciones", "audit_exceso"]
-    }
-
-@app.post("/api/limpieza/ejecutar")
-def limpieza_ejecutar(data: dict = {}):
-    forzado = data.get("forzado", True)
-    result = ejecutar_limpieza_inteligente(forzado=forzado)
-    audit_log("admin", "limpieza_6_meses", f"Borrados GPS:{result['gps_borrados']} Asist:{result['asistencias_borradas']} Total:{result['gps_borrados']+result['asistencias_borradas']}")
-    return result
-
-@app.post("/api/limpieza/config")
-def limpieza_config(data: dict):
-    limpieza_config_db.update(data)
-    save_db()
-    return limpieza_config_db
-
 @app.get("/admin/dashboard")
-
 def dashboard():
     hoy=datetime.now().strftime("%Y-%m-%d"); mes=datetime.now().strftime("%Y-%m")
     hoy_asist=[a for a in asistencias_db if a["fecha_dia"]==hoy]; mes_asist=[a for a in asistencias_db if a.get("fecha")==mes]
@@ -1016,31 +1299,9 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
   .bottom-nav{display:none !important}
 }
 .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;background:#0f172a;border:1px solid #334155}
-</style><style>#login{ display:flex !important; position:fixed !important; inset:0 !important; z-index:9999 !important; }</style>
+</style>
+<style id="dynamic-theme"></style>
 </head><body>
-
-<script>
-// EMERGENCIA ?clear borra sesion y AUTO-FIX pantalla en blanco
-if(window.location.search.includes('clear')){
-  localStorage.clear(); sessionStorage.clear();
-  history.replaceState(null,'',window.location.pathname);
-}
-setTimeout(()=>{
-  try{
-    const loginEl=document.getElementById('login');
-    const appEl=document.getElementById('app');
-    const loginVisible = loginEl && loginEl.offsetParent!==null;
-    const appVisible = appEl && appEl.offsetParent!==null && appEl.offsetHeight>100;
-    if(!loginVisible && !appVisible){
-      console.log('⚠️ Pantalla en blanco - forzando login');
-      localStorage.clear();
-      if(loginEl) loginEl.style.setProperty('display','flex','important');
-      if(appEl) appEl.style.display='none';
-    }
-  }catch(e){}
-}, 1500);
-</script>
-
 
 <!-- REGISTRO MODAL -->
 <div id="registro-empresa-modal" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:16px;background:var(--bg)">
@@ -1101,7 +1362,6 @@ setTimeout(()=>{
 <div class="sidebar-section">SISTEMA</div>
 <div class="sidebar-item" onclick="switchTab('tab-config')"><span>⚙️</span> Config & Backup</div>
 <div class="sidebar-item" onclick="switchTab('tab-audit')"><span>📋</span> Auditoría</div>
-<div class="sidebar-item" onclick="switchTab('tab-perfil-admin')" style="border:2px solid #6366f1"><span>👑</span> Mi Perfil Admin</div>
 <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--border)"><div class="sidebar-item" onclick="logout()"><span>🚪</span> Salir</div></div>
 </div>
 <div id="sidebar-emp" style="display:none">
@@ -1112,8 +1372,6 @@ setTimeout(()=>{
 <div class="sidebar-item" onclick="switchTabEmp('tab-emp-historial')"><span>📊</span> Historial</div>
 <div class="sidebar-section">GESTIÓN</div>
 <div class="sidebar-item" onclick="switchTabEmp('tab-emp-vacaciones')"><span>🏖️</span> Vacaciones</div>
-<div class="sidebar-item" onclick="switchTabEmp('tab-emp-chat')"><span>💬</span> Chat con Admin</div>
-<div class="sidebar-item" onclick="switchTabEmp('tab-emp-panico')"><span>🆘</span> Pánico SOS</div>
 <div class="sidebar-item" onclick="switchTabEmp('tab-emp-perfil')"><span>👤</span> Mi Perfil</div>
 <div class="sidebar-item" onclick="switchTabEmp('tab-emp-notif')"><span>🔔</span> Notificaciones</div>
 <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--border)"><div class="sidebar-item" onclick="logout()"><span>🚪</span> Salir</div></div>
@@ -1135,14 +1393,7 @@ setTimeout(()=>{
 </div>
 
 <div id="tab-empleados" class="tab-content">
-<div class="card" id="card-crear-empleado"><h3>👤 Nuevo Empleado + Rol + WhatsApp</h3><div style="background:#10b98115;padding:8px;border-radius:10px"><small>Próximo: <b id="next-id" style="color:#10b981">...</b></small></div><div style="display:flex;gap:8px"><input id="emp_id" class="input" readonly><button class="btn btn-dark" style="width:auto;margin-top:8px" onclick="generarID()">🔄</button></div><input id="emp_nombre" class="input" placeholder="Nombre *"><input id="emp_puesto" class="input" placeholder="Puesto"><div style="background:#0f172a;border:1px solid #334155;border-radius:12px;padding:12px;margin-top:8px">
-<div style="font-size:11px;font-weight:800;margin-bottom:8px">🎭 ROLES (puedes elegir uno o varios):</div>
-<div id="emp_roles_checkboxes" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:120px;overflow:auto">
-Cargando roles...
-</div>
-<small style="font-size:10px;color:#94a3b8">Si eliges varios, el primero será el principal. Ej: Empleado + Supervisor</small>
-</div>
-<input type="hidden" id="emp_rol" value="empleado"><input id="emp_telefono" class="input" placeholder="WhatsApp con código país ej 521... *"><div style="display:flex;gap:8px"><input id="emp_sueldo" class="input" type="number" placeholder="Sueldo por hora $" value="50"><input id="emp_pass" class="input" placeholder="Contraseña *"></div><div style="display:flex;gap:8px;align-items:center;margin-top:8px"><label style="font-size:12px;min-width:80px">Comida:</label><input id="emp_comida" class="input" type="number" value="120" style="margin-top:0"><span>min</span></div><div id="check-suc" style="background:#0f172a;border-radius:10px;padding:8px;margin-top:8px;max-height:80px;overflow:auto"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px"><select id="d-lunes" class="input"></select><select id="d-martes" class="input"></select><select id="d-miercoles" class="input"></select><select id="d-jueves" class="input"></select><select id="d-viernes" class="input"></select><select id="d-sabado" class="input"></select><select id="d-domingo" class="input"></select></div><button class="btn btn-success" onclick="crearEmp()">💾 Guardar Empleado</button></div>
+<div class="card" id="card-crear-empleado"><h3>👤 Nuevo Empleado + Rol + WhatsApp</h3><div style="background:#10b98115;padding:8px;border-radius:10px"><small>Próximo: <b id="next-id" style="color:#10b981">...</b></small></div><div style="display:flex;gap:8px"><input id="emp_id" class="input" readonly><button class="btn btn-dark" style="width:auto;margin-top:8px" onclick="generarID()">🔄</button></div><input id="emp_nombre" class="input" placeholder="Nombre *"><input id="emp_puesto" class="input" placeholder="Puesto"><select id="emp_rol" class="input"><option value="empleado">👷 Empleado</option><option value="supervisor">👁️ Supervisor</option><option value="rh">📋 RH</option><option value="gerente">🏢 Gerente</option><option value="admin">👑 Admin</option></select><input id="emp_telefono" class="input" placeholder="WhatsApp con código país ej 521... *"><div style="display:flex;gap:8px"><input id="emp_sueldo" class="input" type="number" placeholder="Sueldo por hora $" value="50"><input id="emp_pass" class="input" placeholder="Contraseña *"></div><div style="display:flex;gap:8px;align-items:center;margin-top:8px"><label style="font-size:12px;min-width:80px">Comida:</label><input id="emp_comida" class="input" type="number" value="120" style="margin-top:0"><span>min</span></div><div id="check-suc" style="background:#0f172a;border-radius:10px;padding:8px;margin-top:8px;max-height:80px;overflow:auto"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px"><select id="d-lunes" class="input"></select><select id="d-martes" class="input"></select><select id="d-miercoles" class="input"></select><select id="d-jueves" class="input"></select><select id="d-viernes" class="input"></select><select id="d-sabado" class="input"></select><select id="d-domingo" class="input"></select></div><button class="btn btn-success" onclick="crearEmp()">💾 Guardar Empleado</button></div>
 <div class="card"><h3>📋 Lista Empleados</h3><div id="list-emp" style="margin-top:10px"></div></div>
 </div>
 
@@ -1168,86 +1419,32 @@ Cargando roles...
 <div id="tab-panico" class="tab-content"><div class="card" style="border:2px solid #ef4444"><h3>🆘 Pánico SOS</h3><div id="panico-admin"></div></div></div>
 <div id="tab-config" class="tab-content">
 
-<div class="card" style="border:2px solid #f59e0b;background:linear-gradient(135deg,#f59e0b15,#ef444415)">
-<h3>🗑️ Limpieza Automática Inteligente</h3>
-<p style="font-size:11px;color:var(--muted)">GPS cada 3 meses, todo lo demás cada 6 meses. Siempre conserva: empresas, empleados, sucursales, roles, permisos, fotos.</p>
-<div style="background:#0f172a;border-radius:12px;padding:12px;margin-top:10px;font-size:11px" id="limpieza-status">
-Cargando estado...
+<div class="card" style="border:2px solid #6366f1;background:linear-gradient(135deg,#6366f115,#8b5cf615)">
+<h3>🎨 Elige tu Estilo de Vista (Solo Admin)</h3>
+<p style="font-size:11px;color:var(--muted);margin-top:4px">Tú como admin puedes cambiar entre 6 diseños. El empleado siempre ve el estilo 1 (App Móvil simple).</p>
+<p style="font-size:12px;margin-top:10px">Actual: <b id="tema-actual-txt">📱 App Móvil</b></p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+<div id="tema-opt-1" class="tema-option card" onclick="aplicarTema(1)" style="cursor:pointer;text-align:center;padding:16px;margin:0"><div style="font-size:32px">📱</div><b style="font-size:12px">1. App Móvil</b><br><small style="font-size:10px;color:var(--muted)">Celular, tarjetas redondas</small></div>
+<div id="tema-opt-2" class="tema-option card" onclick="aplicarTema(2)" style="cursor:pointer;text-align:center;padding:16px;margin:0"><div style="font-size:32px">🖥️</div><b style="font-size:12px">2. Corporativo</b><br><small style="font-size:10px;color:var(--muted)">Notion/Slack, limpio</small></div>
+<div id="tema-opt-3" class="tema-option card" onclick="aplicarTema(3)" style="cursor:pointer;text-align:center;padding:16px;margin:0"><div style="font-size:32px">✨</div><b style="font-size:12px">3. Minimalista</b><br><small style="font-size:10px;color:var(--muted)">Apple, blanco y aire</small></div>
+<div id="tema-opt-4" class="tema-option card" onclick="aplicarTema(4)" style="cursor:pointer;text-align:center;padding:16px;margin:0;border:2px solid #a855f7"><div style="font-size:32px">🎮</div><b style="font-size:12px">4. Neón Gaming</b><br><small style="font-size:10px;color:var(--muted)">Oscuro con brillos</small></div>
+<div id="tema-opt-5" class="tema-option card" onclick="aplicarTema(5)" style="cursor:pointer;text-align:center;padding:16px;margin:0"><div style="font-size:32px">📊</div><b style="font-size:12px">5. Kanban</b><br><small style="font-size:10px;color:var(--muted)">Arrastrable, interactivo</small></div>
+<div id="tema-opt-6" class="tema-option card" onclick="aplicarTema(6)" style="cursor:pointer;text-align:center;padding:16px;margin:0"><div style="font-size:32px">🏢</div><b style="font-size:12px">6. Empresa Seria</b><br><small style="font-size:10px;color:var(--muted)">SAP, formal azul</small></div>
 </div>
-<div class="grid2" style="margin-top:10px">
-<button class="btn btn-warning" onclick="ejecutarLimpieza()" style="font-size:11px">🗑️ Ejecutar Limpieza Ahora</button>
-<button class="btn btn-dark" onclick="cargarLimpiezaStatus()" style="font-size:11px">🔄 Actualizar Estado</button>
+<div style="background:#0f172a;border-radius:12px;padding:12px;margin-top:12px;font-size:11px">
+<b>💡 Recomendación:</b><br>
+• 📱 Celular → Se ve estilo 1 (menú abajo) automático<br>
+• 💻 PC → Se ve estilo lateral + el tema que elijas arriba<br>
+• 👷 Empleado → Siempre estilo 1 simple, no puede cambiar<br>
+• 👑 Tú como admin → Eliges desde aquí
 </div>
-<div style="display:flex;gap:8px;margin-top:10px">
-<label style="font-size:11px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="auto_limpieza_activo" checked> Auto activo</label>
-<input id="gps_meses_cfg" type="number" value="3" style="width:60px" class="input"> <small>meses GPS</small>
-<input id="general_meses_cfg" type="number" value="6" style="width:60px" class="input"> <small>meses General</small>
-<button class="btn btn-primary" onclick="guardarLimpiezaConfig()" style="width:auto;padding:6px 10px;font-size:10px">💾 Guardar</button>
-</div>
-<p id="msg-limpieza" style="font-size:11px;margin-top:8px"></p>
-</div>
-
-<div class="card" style="border:2px solid #6366f1;background:linear-gradient(135deg,#6366f115,#0ea5e915)">
-<h3>👨‍💻 Información del Creador - Solo Lectura</h3>
-<div style="display:flex;gap:16px;align-items:center;margin-top:12px">
-<div style="width:80px;height:80px;background:linear-gradient(135deg,#6366f1,#ec4899);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px">👨‍💻</div>
-<div style="flex:1">
-<div style="font-size:16px;font-weight:800">Rubén García</div>
-<div style="font-size:12px;color:#94a3b8">Creador Exclusivo - Clock RD PRO MAX 2026</div>
-<div style="margin-top:8px;background:#0f172a;border-radius:10px;padding:10px;font-size:11px" id="creador-info-display">
-Cargando info del creador...
-</div>
-</div>
-</div>
-<div style="display:flex;gap:8px;margin-top:12px">
-<button class="btn btn-primary" onclick="verTerminos()" style="width:auto;padding:10px 16px;font-size:11px">📜 Ver Términos y Condiciones Exclusivos</button>
-<button class="btn btn-dark" onclick="cargarCreadorInfo()" style="width:auto;padding:10px 16px;font-size:11px">🔄 Actualizar Info</button>
-</div>
-</div>
-
-<div class="card" style="border:2px solid #8b5cf6">
-<h3>🎭 Gestión de Roles Personalizados</h3>
-<p style="font-size:11px;color:#94a3b8">Crea roles nuevos, asigna múltiples roles por empleado. Ej: Alguien puede ser Empleado + Supervisor a la vez.</p>
-<div style="background:#0f172a;border-radius:12px;padding:12px;margin-top:10px">
-<div class="grid2"><input id="new_rol_id" class="input" placeholder="ID rol ej: cajero, bodega" style="margin-top:0"><input id="new_rol_nombre" class="input" placeholder="Nombre ej: Cajero" style="margin-top:0"></div>
-<input id="new_rol_desc" class="input" placeholder="Descripción del rol">
-<div style="display:flex;gap:8px;margin-top:8px"><input id="new_rol_color" type="color" value="#6366f1" style="width:50px;height:40px;border-radius:8px;border:none"><input id="new_rol_permisos" class="input" placeholder="Permisos ej: dashboard,empleados,retardos" style="margin-top:0;flex:1"></div>
-<button class="btn btn-success" onclick="crearRolCustom()" style="font-size:11px">➕ Crear Rol Nuevo</button>
-</div>
-<div id="roles-lista" style="margin-top:12px;max-height:200px;overflow:auto"></div>
 </div>
 
 <div class="card" style="border:2px solid #ec4899"><h3>⚙️ Configuración WhatsApp y Bonos</h3><div class="grid2"><input id="conf_tel_admin" class="input" placeholder="Tu WhatsApp admin ej 521..."><input id="conf_bono" class="input" type="number" placeholder="Bono puntualidad $"></div><div class="grid2"><input id="conf_sueldo_default" class="input" type="number" placeholder="Sueldo default $/h"><label style="display:flex;align-items:center;gap:8px;margin-top:10px"><input type="checkbox" id="conf_whatsapp_activo" checked> WhatsApp auto</label></div><button class="btn btn-primary" onclick="guardarConfigAdmin()">💾 Guardar</button><p id="msg-conf-admin" style="font-size:11px;margin-top:8px"></p></div>
 <div class="card"><h3>💾 Backup y DB</h3><div class="grid2"><button class="btn btn-dark" onclick="hacerBackup()">💾 Backup JSON</button><button class="btn btn-dark" onclick="cargarAudit()">📋 Ver Auditoría</button></div><div id="backup-result" style="display:none;margin-top:12px;background:#0f172a;border-radius:12px;padding:12px;font-size:11px"></div><div id="audit-result" style="display:none;margin-top:12px;background:#0f172a;border-radius:12px;padding:12px;max-height:200px;overflow:auto;font-size:11px"></div></div>
 </div>
 <div id="tab-audit" class="tab-content"><div class="card"><h3>📋 Auditoría Completa</h3><button class="btn btn-dark" onclick="cargarAudit()">🔄 Cargar Auditoría</button><div id="audit-result2" style="margin-top:12px"></div></div></div>
-
-<div id="tab-perfil-admin" class="tab-content">
-<div class="card" style="border:2px solid #6366f1"><h3>👑 Mi Perfil Admin</h3>
-<div style="display:flex;gap:16px;align-items:center;margin-top:12px">
-<img id="admin_foto_preview" src="" style="width:90px;height:90px;border-radius:50%;background:#1e293b;object-fit:cover;border:3px solid #6366f1;display:none">
-<div style="flex:1">
-<div id="admin-perfil-info" style="background:#0f172a;border-radius:12px;padding:12px;font-size:12px">Cargando perfil...</div>
-<div style="margin-top:10px;display:flex;gap:8px">
-<input type="file" id="admin_foto_input" accept="image/*" class="input" style="font-size:11px;margin-top:0">
-<button class="btn btn-primary" onclick="subirFotoAdmin()" style="width:auto;padding:8px 12px;margin-top:0;font-size:11px">📸 Subir Foto</button>
 </div>
-</div>
-</div>
-<div style="margin-top:16px;display:grid;gap:10px">
-<div class="card" style="margin:0;background:#0f172a"><h4 style="font-size:13px">🔑 Cambiar Contraseña Admin</h4><input id="admin_old_pass" class="input" type="password" placeholder="Actual"><input id="admin_new_pass" class="input" type="password" placeholder="Nueva"><button class="btn btn-primary" onclick="cambiarPasswordAdmin()">🔑 Cambiar Contraseña</button><p id="msg-pass-admin" style="font-size:11px;margin-top:8px"></p></div>
-<button class="btn btn-danger" onclick="logout()" style="padding:16px;font-size:15px;background:linear-gradient(135deg,#ef4444,#dc2626)">🚪 Cerrar Sesión Admin</button>
-<div style="background:linear-gradient(135deg,#6366f115,#8b5cf615);border:1px solid #6366f133;border-radius:12px;padding:12px;font-size:11px">
-<b>💡 Info sesión:</b><br>
-• Sesión permanente activa<br>
-• Al recargar no pide contraseña<br>
-• Solo se cierra si presionas Cerrar Sesión<br>
-• Foto de perfil visible en topbar
-</div>
-</div>
-</div>
-</div>
-
 
 <!-- EMPLEADO TABS -->
 <div id="empleado-area" style="display:none">
@@ -1260,32 +1457,9 @@ Cargando info del creador...
 <div id="tab-emp-historial" class="tab-content"><div class="card"><h3>📊 Mi Historial</h3><canvas id="chart-horas-emp"></canvas><div id="emp-historial-lista" style="margin-top:12px;max-height:300px;overflow:auto"></div></div></div>
 <div id="tab-emp-vacaciones" class="tab-content"><div class="card" style="border:2px solid #6366f1"><h3>🏖️ Vacaciones y Justificantes</h3><div class="grid2"><div><b style="font-size:12px">Vacaciones</b><select id="vac_tipo" class="input"><option value="vacaciones">Vacaciones</option><option value="permiso">Permiso</option><option value="permiso_sin_goce">Sin goce</option><option value="incapacidad">Incapacidad</option></select><div class="grid2"><input id="vac_inicio" class="input" type="date"><input id="vac_fin" class="input" type="date"></div><textarea id="vac_motivo" class="input" placeholder="Motivo..." rows="2"></textarea><button class="btn btn-primary" onclick="solicitarVacaciones()">📅 Solicitar</button></div><div><b style="font-size:12px">Justificante</b><input id="just_fecha" class="input" type="date"><select id="just_tipo" class="input"><option value="enfermedad">Enfermedad</option><option value="medico">Médica</option><option value="familiar">Familiar</option></select><input id="just_foto" class="input" type="file" accept="image/*"><textarea id="just_motivo" class="input" placeholder="Motivo..." rows="2"></textarea><button class="btn btn-warning" onclick="subirJustificante()">📄 Subir</button></div></div><div class="grid2" style="margin-top:12px"><div id="mis-vacaciones" style="max-height:150px;overflow:auto"></div><div id="mis-justificantes" style="max-height:150px;overflow:auto"></div></div></div></div>
 <div id="tab-emp-perfil" class="tab-content">
-<div class="card" style="border:2px solid #8b5cf6"><h3>👤 Mi Perfil + Foto</h3><div style="display:flex;gap:12px;align-items:center"><img id="emp_foto_preview" src="" style="width:80px;height:80px;border-radius:50%;background:#334155;object-fit:cover;display:none"><div><input type="file" id="emp_foto_input" accept="image/*" class="input" style="font-size:11px"><button class="btn btn-primary" onclick="subirFotoPerfil()" style="width:auto;padding:6px 12px;font-size:11px;margin-top:6px">📸 Subir Foto</button></div></div><div id="emp-perfil-info" style="margin-top:12px;font-size:12px;background:#0f172a;border-radius:12px;padding:12px"></div>
-<div style="margin-top:16px;display:grid;gap:10px">
-<button class="btn btn-danger" onclick="logout()" style="padding:14px;font-size:14px">🚪 Cerrar Sesión</button>
-<div style="background:#0f172a;border-radius:12px;padding:10px;font-size:11px;color:#94a3b8;text-align:center">Sesión guardada • No necesitas volver a poner contraseña al recargar</div>
+<div class="card" style="border:2px solid #8b5cf6"><h3>👤 Mi Perfil + Foto</h3><div style="display:flex;gap:12px;align-items:center"><img id="emp_foto_preview" src="" style="width:80px;height:80px;border-radius:50%;background:#334155;object-fit:cover;display:none"><div><input type="file" id="emp_foto_input" accept="image/*" class="input" style="font-size:11px"><button class="btn btn-primary" onclick="subirFotoPerfil()" style="width:auto;padding:6px 12px;font-size:11px;margin-top:6px">📸 Subir</button></div></div><div id="emp-perfil-info" style="margin-top:12px;font-size:12px;background:#0f172a;border-radius:12px;padding:12px"></div></div>
+<div class="card"><h3>🔑 Seguridad</h3><input id="old_pass" class="input" type="password" placeholder="Actual"><input id="new_pass" class="input" type="password" placeholder="Nueva"><button class="btn btn-primary" onclick="cambiarPassword()">🔑 Cambiar</button><p id="msg-pass" style="font-size:11px;margin-top:8px"></p></div>
 </div>
-</div>
-<div class="card"><h3>🔑 Seguridad</h3><input id="old_pass" class="input" type="password" placeholder="Actual"><input id="new_pass" class="input" type="password" placeholder="Nueva"><button class="btn btn-primary" onclick="cambiarPassword()">🔑 Cambiar Contraseña</button><p id="msg-pass" style="font-size:11px;margin-top:8px"></p>
-<button class="btn btn-dark" onclick="logout()" style="margin-top:12px">🚪 Cerrar Sesión desde aquí también</button>
-</div>
-</div>
-<div id="tab-emp-chat" class="tab-content">
-<div class="card" style="border:2px solid #0ea5e9"><h3>💬 Chat con Administrador</h3>
-<div id="chat-emp-list" style="margin-top:12px;max-height:300px;overflow:auto;background:#0f172a;border-radius:12px;padding:12px;font-size:11px"></div>
-<div style="display:flex;gap:8px;margin-top:12px"><input id="chat_emp_msg" class="input" placeholder="Escribe mensaje al admin..." style="margin-top:0"><button class="btn btn-primary" onclick="enviarChatEmpleado()" style="width:auto;margin-top:0">📤 Enviar</button></div>
-</div>
-</div>
-
-<div id="tab-emp-panico" class="tab-content">
-<div class="card" style="border:2px solid #ef4444;background:linear-gradient(135deg,#ef444415,#f59e0b15)"><h3>🆘 Botón de Pánico SOS</h3>
-<p style="font-size:11px;color:var(--muted);margin-top:6px">Si tienes emergencia, presiona el botón. Enviará tu ubicación GPS exacta al administrador.</p>
-<button class="btn btn-danger" onclick="activarPanico()" style="padding:20px;font-size:18px;margin-top:16px;background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 8px 20px rgba(239,68,68,.4)">🆘 ENVIAR SOS DE EMERGENCIA</button>
-<p id="msg-panico" style="font-size:12px;margin-top:10px;text-align:center"></p>
-<div style="background:#0f172a;border-radius:12px;padding:12px;margin-top:12px;font-size:11px"><b>📍 Tu ubicación actual:</b><br><span id="panico-ubicacion">Obteniendo GPS...</span></div>
-</div>
-</div>
-
 <div id="tab-emp-notif" class="tab-content"><div class="card"><h3>🔔 Notificaciones</h3><div id="emp-notificaciones" style="margin-top:10px"></div><div id="mis-notifs" style="margin-top:12px"></div><div id="mi-historial"></div></div></div>
 </div>
 
@@ -1302,9 +1476,9 @@ Cargando info del creador...
 </div>
 <div class="bottom-nav" id="bottom-nav-emp" style="display:none">
 <div class="bottom-nav-item active" onclick="switchTabEmp('tab-emp-jornada')"><div class="icon">⏰</div>Jornada</div>
-<div class="bottom-nav-item" onclick="switchTabEmp('tab-emp-calendario')"><div class="icon">🗓️</div>Calen</div>
-<div class="bottom-nav-item" onclick="switchTabEmp('tab-emp-chat')"><div class="icon">💬</div>Chat</div>
-<div class="bottom-nav-item" onclick="switchTabEmp('tab-emp-panico')"><div class="icon">🆘</div>SOS</div>
+<div class="bottom-nav-item" onclick="switchTabEmp('tab-emp-calendario')"><div class="icon">🗓️</div>Calendario</div>
+<div class="bottom-nav-item" onclick="switchTabEmp('tab-emp-ranking')"><div class="icon">🏆</div>Bono</div>
+<div class="bottom-nav-item" onclick="switchTabEmp('tab-emp-vacaciones')"><div class="icon">🏖️</div>Vacaciones</div>
 <div class="bottom-nav-item" onclick="switchTabEmp('tab-emp-perfil')"><div class="icon">👤</div>Perfil</div>
 </div>
 
@@ -1331,7 +1505,7 @@ function switchTab(tabId){
     if(el.getAttribute('onclick')?.includes(tabId)) el.classList.add('active');
   });
   const titles={'tab-dashboard':'📊 Dashboard','tab-empleados':'👥 Empleados','tab-sucursales':'🏢 Sucursales','tab-retardos':'⏱️ Retardos','tab-gps':'🗺️ GPS & Ruta','tab-evaluaciones':'⭐ Evaluaciones','tab-nomina':'💰 Nómina','tab-reportes':'📈 Reportes','tab-vacaciones':'🏖️ Vacaciones','tab-chat':'💬 Chat','tab-panico':'🆘 Pánico','tab-config':'⚙️ Configuración','tab-audit':'📋 Auditoría'};
-  if(tabId==='tab-perfil-admin') document.getElementById('topbar-title').innerText='👑 Mi Perfil Admin'; else document.getElementById('topbar-title').innerText=titles[tabId]||'Clock RD';
+  document.getElementById('topbar-title').innerText=titles[tabId]||'Clock RD';
   window.scrollTo(0,0);
 }
 function switchTabEmp(tabId){
@@ -1460,7 +1634,7 @@ window.addEventListener('load', async ()=>{
   if(sesion==='true' && uid){
     USER_ID=uid; ROL=rol;
     try{
-      document.getElementById('login').style.setProperty('display','none','important'); document.getElementById('app').style.setProperty('display','block','important');
+      document.getElementById('login').style.display='none'; document.getElementById('app').style.display='block';
       document.getElementById('banner-nombre').innerText=`👋 Hola, ${nombre}`; document.getElementById('banner-nombre2').innerText=`👋 Hola, ${nombre} | ${rol?.toUpperCase()} ${empresa? ' - '+empresa : ''}`;
       document.getElementById('user-display').innerText=nombre+' ('+rol+')';
       if(rol==='empleado'){
@@ -1478,209 +1652,38 @@ window.addEventListener('load', async ()=>{
   }
 });
 function logout(){ if(confirm('¿Cerrar sesión?')){ localStorage.clear(); location.reload(); } }
-async function cargarLimpiezaStatus(){
-  try{
-    const s=await api('/api/limpieza/status');
-    document.getElementById('limpieza-status').innerHTML=`
-      <b>📊 Registros actuales:</b> ${s.total_registros_actual} total<br>
-      GPS: ${s.gps_actual} | Asistencias: ${s.asistencias_actual}<br><br>
-      <b>🗓️ Próximas limpiezas:</b><br>
-      📍 GPS (3 meses): <b style="color:#f59e0b">${s.proxima_limpieza_gps}</b><br>
-      🗂️ General (6 meses): <b style="color:#ef4444">${s.proxima_limpieza_general}</b><br><br>
-      <b>✅ Siempre conserva:</b> ${s.conserva_siempre.join(', ')}<br>
-      <b>🗑️ Borra GPS 3m:</b> ${s.borra_gps_3_meses.join(', ')}<br>
-      <b>🗑️ Borra General 6m:</b> ${s.borra_general_6_meses.join(', ')}<br>
-      <small style="color:var(--muted)">Última GPS: ${s.config.ultima_limpieza_gps||'Nunca'} | Última General: ${s.config.ultima_limpieza_general||'Nunca'}</small>
-    `;
-    document.getElementById('auto_limpieza_activo').checked = s.config.auto_activo!==false;
-    document.getElementById('gps_meses_cfg').value = s.config.gps_meses||3;
-    document.getElementById('general_meses_cfg').value = s.config.general_meses||6;
-  }catch(e){ document.getElementById('limpieza-status').innerText='❌ '+e.detail; }
-}
-async function ejecutarLimpieza(){
-  if(!confirm('¿Borrar datos viejos? GPS >3 meses y resto >6 meses. Se conservan empresas, empleados, sucursales.')) return;
-  try{
-    const r=await api('/api/limpieza/ejecutar','POST',{forzado:true});
-    document.getElementById('msg-limpieza').innerHTML=`✅ Limpieza: GPS ${r.gps_borrados} borrados, Asistencias ${r.asistencias_borradas}, Chat ${r.chat_borrados}, Total liberado ~${r.espacio_liberado_mb} MB`;
-    cargarLimpiezaStatus();
-  }catch(e){ document.getElementById('msg-limpieza').innerText='❌ '+(e.detail||'Error'); }
-}
-async function guardarLimpiezaConfig(){
-  const data={auto_activo: document.getElementById('auto_limpieza_activo').checked, gps_meses: parseInt(document.getElementById('gps_meses_cfg').value)||3, general_meses: parseInt(document.getElementById('general_meses_cfg').value)||6};
-  try{ await api('/api/limpieza/config','POST',data); document.getElementById('msg-limpieza').innerText='✅ Config guardada'; cargarLimpiezaStatus(); }catch(e){ document.getElementById('msg-limpieza').innerText='❌ '+e.detail; }
-}
-const oldCargarTodo2 = cargarTodo;
-cargarTodo = async function(){
-  await oldCargarTodo2();
-  cargarLimpiezaStatus();
-};
-
-
-async function cargarPerfilAdmin(){
-  try{
-    const info = await api('/api/empresa-info');
-    const nombre = localStorage.getItem('nombre')||'Admin';
-    const rol = localStorage.getItem('rol')||'superadmin';
-    const empresa = localStorage.getItem('empresa_nombre')||info.empresa||'';
-    const correo = info.correo||'';
-    const telefono = info.telefono||'';
-    document.getElementById('admin-perfil-info').innerHTML = `<b>${nombre}</b> - ${rol.toUpperCase()}<br>🏢 ${empresa}<br>📧 ${correo}<br>📱 ${telefono}<br><br><span style="color:#10b981">✅ Sesión activa</span> - ID: ${USER_ID}`;
-    // foto si existe en localStorage o perfil_fotos
-    const foto = localStorage.getItem('admin_foto') || '';
-    if(foto){
-      document.getElementById('admin_foto_preview').src=foto;
-      document.getElementById('admin_foto_preview').style.display='block';
-      document.getElementById('topbar-foto').src=foto;
-      document.getElementById('topbar-foto').style.display='block';
-    }
-  }catch(e){}
-}
-async function subirFotoAdmin(){
-  const file=document.getElementById('admin_foto_input').files[0];
-  if(!file) return alert('Selecciona foto');
-  const reader=new FileReader();
-  reader.onload=async e=>{
-    const foto=e.target.result;
-    localStorage.setItem('admin_foto', foto);
-    document.getElementById('admin_foto_preview').src=foto;
-    document.getElementById('admin_foto_preview').style.display='block';
-    document.getElementById('topbar-foto').src=foto;
-    document.getElementById('topbar-foto').style.display='block';
-    // guardar en backend también
-    try{ await api('/api/empleado/'+USER_ID+'/foto','POST',{foto:foto}); }catch(e){}
-    alert('✅ Foto admin actualizada');
-  };
-  reader.readAsDataURL(file);
-}
-async function cambiarPasswordAdmin(){
-  const old=document.getElementById('admin_old_pass').value;
-  const nw=document.getElementById('admin_new_pass').value;
-  if(!old||!nw) return alert('Llena ambos');
-  try{
-    // intenta como empleado
-    await api('/api/cambiar-password','POST',{empleado_id:USER_ID,old_password:old,new_password:nw});
-    document.getElementById('msg-pass-admin').innerText='✅ Contraseña cambiada (empleado)';
-  }catch(e){
-    document.getElementById('msg-pass-admin').innerText='❌ '+(e.detail||'Usa recuperación si eres admin principal');
-  }
-}
-// Hook para cargar perfil admin al cambiar tab
-const originalSwitchTab = switchTab;
-switchTab = function(tabId){
-  originalSwitchTab(tabId);
-  if(tabId==='tab-perfil-admin') cargarPerfilAdmin();
-  if(tabId==='tab-emp-perfil') cargarMiPerfil();
-};
-
-
-<div id="modal-terminos" class="modal"><div class="modal-content" style="max-width:700px"><h3>📜 Términos y Condiciones Exclusivos</h3>
-<div style="background:#0f172a;border-radius:12px;padding:16px;margin-top:12px;font-size:11px;max-height:400px;overflow:auto;white-space:pre-wrap" id="terminos-contenido">
-Cargando términos...
-</div>
-<div style="background:linear-gradient(135deg,#6366f115,#ec489915);border:1px solid #6366f133;border-radius:12px;padding:12px;margin-top:12px;font-size:11px">
-<b>👨‍💻 Creador:</b> Rubén García<br>
-<b>📅 Versión:</b> PRO MAX 2026<br>
-<b>🔒 Licencia:</b> Exclusiva - Uso privado<br>
-<b>⚠️ Nota:</b> Este sistema es propiedad exclusiva y no puede ser copiado, revendido o distribuido sin autorización.
-</div>
-<button class="btn btn-dark" onclick="document.getElementById('modal-terminos').style.display='none'" style="margin-top:12px">✅ Entendido</button>
-</div></div>
-
+</script>
 <script>
-async function cargarRolesCheckboxes(){
-  try{
-    const roles = await api('/api/roles');
-    const container = document.getElementById('emp_roles_checkboxes');
-    if(!container) return;
-    container.innerHTML = Object.entries(roles).map(([id, r])=>`
-      <label style="display:flex;align-items:center;gap:6px;background:#1e293b;padding:8px;border-radius:8px;cursor:pointer;font-size:11px;border-left:3px solid ${r.color}">
-        <input type="checkbox" value="${id}" class="rol-chk" onchange="actualizarRolPrincipal()"> 
-        <span style="color:${r.color}">●</span> ${r.nombre}
-      </label>
-    `).join('');
-  }catch(e){ document.getElementById('emp_roles_checkboxes').innerHTML='Error cargando roles'; }
-}
-function actualizarRolPrincipal(){
-  const checks = [...document.querySelectorAll('.rol-chk:checked')].map(c=>c.value);
-  document.getElementById('emp_rol').value = checks[0]||'empleado';
-}
-async function cargarRolesLista(){
-  try{
-    const roles = await api('/api/roles');
-    document.getElementById('roles-lista').innerHTML = Object.entries(roles).map(([id, r])=>`
-      <div style="background:#0f172a;padding:10px;border-radius:10px;margin-top:6px;display:flex;justify-content:space-between;align-items:center;border-left:4px solid ${r.color}">
-        <div style="font-size:11px"><b>${r.nombre}</b> (${id}) ${r.es_sistema?'🔒':''}<br><small style="color:#94a3b8">${r.descripcion||''} - Permisos: ${(r.permisos||[]).join(', ')}</small></div>
-        ${!r.es_sistema?`<button onclick="eliminarRol('${id}')" style="padding:4px 8px;border-radius:6px;border:none;background:#ef4444;color:white;font-size:10px">🗑️</button>`:''}
-      </div>
-    `).join('');
-  }catch(e){}
-}
-async function crearRolCustom(){
-  const id = document.getElementById('new_rol_id').value.toLowerCase().trim();
-  const nombre = document.getElementById('new_rol_nombre').value;
-  const desc = document.getElementById('new_rol_desc').value;
-  const color = document.getElementById('new_rol_color').value;
-  const permisos = document.getElementById('new_rol_permisos').value.split(',').map(s=>s.trim()).filter(s=>s);
-  if(!id||!nombre) return alert('ID y nombre obligatorios');
-  try{
-    await api('/api/roles','POST',{id:id, nombre:nombre, descripcion:desc, color:color, permisos:permisos});
-    alert('✅ Rol '+nombre+' creado');
-    document.getElementById('new_rol_id').value=''; document.getElementById('new_rol_nombre').value=''; document.getElementById('new_rol_desc').value='';
-    cargarRolesCheckboxes(); cargarRolesLista();
-  }catch(e){ alert('❌ '+(e.detail||'Error')); }
-}
-async function eliminarRol(id){
-  if(!confirm('¿Eliminar rol '+id+'?')) return;
-  try{ await api('/api/roles/'+id,'DELETE'); cargarRolesCheckboxes(); cargarRolesLista(); }catch(e){ alert('❌ '+e.detail); }
-}
-async function cargarCreadorInfo(){
-  try{
-    const info = await api('/api/creador-info');
-    document.getElementById('creador-info-display').innerHTML = `
-      <b>Nombre:</b> ${info.nombre}<br>
-      <b>Empresa:</b> ${info.empresa}<br>
-      <b>Versión:</b> ${info.version}<br>
-      <b>Creación:</b> ${info.fecha_creacion}<br>
-      <b>Licencia:</b> <span style="color:#10b981">${info.licencia}</span><br>
-      <b>Descripción:</b> ${info.descripcion}
-    `;
-  }catch(e){}
-}
-async function verTerminos(){
-  try{
-    const data = await api('/api/terminos-condiciones');
-    document.getElementById('terminos-contenido').innerText = data.terminos;
-    document.getElementById('modal-terminos').style.display='flex';
-  }catch(e){}
-}
-// Actualizar crearEmp para multi-roles
-const oldCrearEmp = crearEmp;
-crearEmp = async function(){
-  const id=document.getElementById('emp_id').value; const nombre=document.getElementById('emp_nombre').value; const puesto=document.getElementById('emp_puesto').value; 
-  const rolesChecks=[...document.querySelectorAll('.rol-chk:checked')].map(c=>c.value);
-  const rolPrincipal=document.getElementById('emp_rol').value||'empleado';
-  const pass=document.getElementById('emp_pass').value; const telefono=document.getElementById('emp_telefono')?.value||''; const sueldo=parseFloat(document.getElementById('emp_sueldo')?.value)||50; const comida=parseInt(document.getElementById('emp_comida').value)||120; 
-  if(!nombre||!pass) return alert('Nombre y contraseña'); 
-  if(!telefono) return alert('Telefono obligatorio'); 
-  if(rolesChecks.length===0) return alert('Selecciona al menos 1 rol');
-  const suc=[...document.querySelectorAll('.chk:checked')].map(c=>c.value); 
-  const hor={lunes:document.getElementById('d-lunes').value,martes:document.getElementById('d-martes').value,miercoles:document.getElementById('d-miercoles').value,jueves:document.getElementById('d-jueves').value,viernes:document.getElementById('d-viernes').value,sabado:document.getElementById('d-sabado').value,domingo:document.getElementById('d-domingo').value}; 
-  const r=await api('/empleados','POST',{id,nombre,puesto,rol:rolPrincipal,roles:rolesChecks,password:pass,telefono,sueldo_hora:sueldo,tiempo_comida:comida,sucursales_ids:suc,horario:hor,activo:true}); 
-  alert(`✅ ${r.id} ${nombre} con roles: ${rolesChecks.join(', ')}`); 
-  document.getElementById('emp_nombre').value=''; document.getElementById('emp_pass').value=''; document.getElementById('emp_telefono').value=''; 
-  document.querySelectorAll('.rol-chk').forEach(c=>c.checked=false);
-  generarID(); cargarEmps();
+const THEMES = {
+  1: {name:'📱 App Móvil', css:':root{--primary:#6366f1;--bg:#0a0e1a;--card:#151a2a} .card{border-radius:24px} .btn{border-radius:16px;padding:16px}'},
+  2: {name:'🖥️ Dashboard Corporativo', css:':root{--primary:#2563eb;--bg:#f8fafc;--card:#ffffff;--text:#0f172a;--border:#e2e8f0;--muted:#64748b} body{background:var(--bg);color:var(--text)} .sidebar{background:white;border-right:1px solid #e2e8f0} .card{background:white;box-shadow:0 1px 3px rgba(0,0,0,.1);border:1px solid #e2e8f0} .input{background:white;color:#0f172a;border:1px solid #e2e8f0}'},
+  3: {name:'✨ Minimalista Apple', css:':root{--primary:#000000;--bg:#ffffff;--card:#f5f5f7;--text:#1d1d1f;--border:#d2d2d7;--muted:#86868b} body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont} .sidebar{background:#f5f5f7} .card{background:var(--card);border:none;box-shadow:none;border-radius:18px} .btn{border-radius:12px;font-weight:600}'},
+  4: {name:'🎮 Neón Gaming', css:':root{--primary:#a855f7;--bg:#050510;--card:#0f0f1e;--border:#1e1e3a;--text:#e0e0ff} body{background:var(--bg);background-image:radial-gradient(circle at 20% 50%, rgba(120,0,255,.15), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255,0,128,.15), transparent 50%)} .card{border:1px solid #2a2a4a;box-shadow:0 0 20px rgba(168,85,247,.15)} .btn-primary{background:linear-gradient(135deg,#a855f7,#ec4899);box-shadow:0 0 20px rgba(168,85,247,.5)} .sidebar-item.active{background:linear-gradient(135deg,#a855f7,#ec4899);box-shadow:0 0 15px rgba(168,85,247,.5)}'},
+  5: {name:'📊 Kanban Interactivo', css:':root{--primary:#0ea5e9;--bg:#f0f9ff;--card:#ffffff} .card{border-left:4px solid var(--primary);cursor:grab;transition:.2s} .card:active{cursor:grabbing;transform:rotate(2deg) scale(1.02);box-shadow:0 10px 30px rgba(0,0,0,.2)} .grid2{grid-template-columns:1fr} @media(min-width:900px){.grid2{grid-template-columns:1fr 1fr}}'},
+  6: {name:'🏢 Empresa Seria', css:':root{--primary:#1e40af;--bg:#f1f5f9;--card:#ffffff;--text:#1e293b;--border:#cbd5e1} .sidebar{background:#1e293b} .sidebar-item{color:#94a3b8} .sidebar-item.active{background:#1e40af} .card{border:1px solid #cbd5e1;border-radius:8px} .btn{border-radius:6px;font-weight:600} .topbar{background:white;border-bottom:2px solid #1e40af}'}
 };
-// Hook para cargar roles y creador al iniciar
-const oldCargarTodo3 = cargarTodo;
-cargarTodo = async function(){
-  await oldCargarTodo3();
-  cargarRolesCheckboxes();
-  cargarRolesLista();
-  cargarCreadorInfo();
-  cargarLimpiezaStatus();
-};
-
+function aplicarTema(num){
+  const theme = THEMES[num];
+  if(!theme) return;
+  document.getElementById('dynamic-theme').innerHTML = theme.css;
+  localStorage.setItem('tema_admin', num);
+  document.getElementById('tema-actual-txt').innerText = theme.name;
+  // Marcar activo en selector
+  document.querySelectorAll('.tema-option').forEach(o=>o.classList.remove('active'));
+  document.getElementById('tema-opt-'+num)?.classList.add('active');
+}
+function cargarTemaGuardado(){
+  const rol = localStorage.getItem('rol');
+  if(rol==='empleado'){
+    // Empleado siempre tema 1
+    document.getElementById('dynamic-theme').innerHTML = THEMES[1].css;
+    return;
+  }
+  const guardado = localStorage.getItem('tema_admin') || '1';
+  aplicarTema(guardado);
+}
+window.addEventListener('load', cargarTemaGuardado);
+</script>
 </body></html>
 """
 
