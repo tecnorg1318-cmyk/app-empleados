@@ -1016,31 +1016,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
   .bottom-nav{display:none !important}
 }
 .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;background:#0f172a;border:1px solid #334155}
-</style><style>#login{ display:flex !important; position:fixed !important; inset:0 !important; z-index:9999 !important; }</style>
-</head><body>
-
-<script>
-// EMERGENCIA ?clear borra sesion y AUTO-FIX pantalla en blanco
-if(window.location.search.includes('clear')){
-  localStorage.clear(); sessionStorage.clear();
-  history.replaceState(null,'',window.location.pathname);
-}
-setTimeout(()=>{
-  try{
-    const loginEl=document.getElementById('login');
-    const appEl=document.getElementById('app');
-    const loginVisible = loginEl && loginEl.offsetParent!==null;
-    const appVisible = appEl && appEl.offsetParent!==null && appEl.offsetHeight>100;
-    if(!loginVisible && !appVisible){
-      console.log('⚠️ Pantalla en blanco - forzando login');
-      localStorage.clear();
-      if(loginEl) loginEl.style.setProperty('display','flex','important');
-      if(appEl) appEl.style.display='none';
-    }
-  }catch(e){}
-}, 1500);
-</script>
-
+</style></head><body>
 
 <!-- REGISTRO MODAL -->
 <div id="registro-empresa-modal" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:16px;background:var(--bg)">
@@ -1253,25 +1229,7 @@ Cargando info del creador...
 <div id="empleado-area" style="display:none">
 <div id="tab-emp-jornada" class="tab-content active">
 <div class="card" style="border:2px solid #10b981"><h3>⏰ Mi Jornada - <span id="user-display" style="font-size:12px;color:var(--muted)"></span></h3><div id="estado-jornada" style="margin-top:12px"></div><button id="btn-check" class="btn btn-primary" onclick="registrar()" style="padding:18px;font-size:16px">📍 Cargando...</button><p id="msg-check" style="font-size:12px;margin-top:8px;text-align:center"></p><div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><span id="gps-status" class="gps-off">GPS: Off</span><span id="dist-suc" style="font-size:11px;color:var(--muted)"></span></div></div>
-
-<!-- DASHBOARD MIS RETARDOS MEJORADO -->
-<div class="card" style="border:2px solid #ef4444"><h3>📊 Dashboard de Mis Retardos</h3>
-<div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-<div style="background:#ef444415;border:1px solid #ef4444;border-radius:12px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:#ef4444" id="total-retardo-entrada">0 min</div><small style="font-weight:700">⏰ Retardo Entrada</small><br><small id="retardo-entrada-detalle" style="font-size:10px;color:#94a3b8">Este mes</small></div>
-<div style="background:#f59e0b15;border:1px solid #f59e0b;border-radius:12px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:#f59e0b" id="total-retardo-comida">0 min</div><small style="font-weight:700">🍽️ Retardo Comida</small><br><small id="retardo-comida-detalle" style="font-size:10px;color:#94a3b8">Este mes</small></div>
-<div style="background:#10b98115;border:1px solid #10b981;border-radius:12px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:#10b981" id="total-horas-mes">0h</div><small style="font-weight:700">⏱️ Horas Mes</small><br><small id="horas-mes-detalle" style="font-size:10px;color:#94a3b8">Trabajadas</small></div>
-</div>
-<div id="mis-retardos" style="margin-top:12px;max-height:200px;overflow:auto"></div>
-<div style="margin-top:12px;background:#0f172a;border-radius:12px;padding:12px">
-<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px"><span>📅 Esta semana:</span><span id="retardos-semana" style="font-weight:800">0 min</span></div>
-<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px"><span>📈 Promedio diario:</span><span id="retardo-promedio" style="font-weight:800">0 min</span></div>
-<div style="display:flex;justify-content:space-between;font-size:11px"><span>🏆 Estado:</span><span id="estado-puntualidad" style="font-weight:800;color:#10b981">✅ Puntual</span></div>
-</div>
-<button class="btn btn-dark" onclick="cargarEmpleado()" style="margin-top:10px;font-size:11px;padding:8px">🔄 Actualizar Dashboard</button>
-</div>
-
-<!-- BOTON DE PANICO RAPIDO EN JORNADA -->
-<div class="card" style="border:2px solid #ef4444;background:linear-gradient(135deg,#ef444410,#dc262610)"><h3>🆘 Emergencia</h3><p style="font-size:11px;color:var(--muted)">¿Necesitas ayuda urgente?</p><button class="btn btn-danger" onclick="switchTabEmp('tab-emp-panico')" style="padding:12px;font-size:13px;margin-top:8px">🆘 IR A BOTÓN DE PÁNICO</button></div>
+<div class="card" style="border:2px solid #f59e0b"><h3>📊 Dashboard de Mis Retardos</h3><div id="mis-retardos"></div><div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"><div style="background:#ef444415;border:1px solid #ef4444;border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#ef4444" id="total-retardo-entrada">0 min</div><small>Entrada</small></div><div style="background:#f59e0b15;border:1px solid #f59e0b;border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#f59e0b" id="total-retardo-comida">0 min</div><small>Comida</small></div><div style="background:#10b98115;border:1px solid #10b981;border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#10b981" id="total-horas-mes">0h</div><small>Horas Mes</small></div></div></div>
 </div>
 <div id="tab-emp-calendario" class="tab-content"><div class="card" style="border:2px solid #6366f1"><h3>🗓️ Mi Calendario</h3><div style="display:flex;gap:8px"><input id="emp_cal_mes" class="input" type="month" style="margin-top:0"><button class="btn btn-primary" onclick="cargarMiCalendario()" style="width:auto;margin-top:0">Ver</button></div><div id="emp-calendario-result" style="margin-top:12px;display:grid;grid-template-columns:repeat(7,1fr);gap:6px"></div><div style="display:flex;gap:12px;margin-top:10px;font-size:10px;flex-wrap:wrap"><span style="color:#10b981">● Presente</span><span style="color:#f59e0b">● Retardo</span><span style="color:#ef4444">● Ausente</span><span style="color:#8b5cf6">● Vacaciones</span></div></div></div>
 <div id="tab-emp-ranking" class="tab-content"><div class="card" style="border:2px solid #f59e0b"><h3>🏆 Ranking y Bono</h3><div id="emp-ranking-info" style="margin-top:10px"></div></div></div>
@@ -1297,21 +1255,14 @@ Cargando info del creador...
 
 <div id="tab-emp-panico" class="tab-content">
 <div class="card" style="border:2px solid #ef4444;background:linear-gradient(135deg,#ef444415,#f59e0b15)"><h3>🆘 Botón de Pánico SOS</h3>
-<p style="font-size:11px;color:var(--muted);margin-top:6px">Si tienes emergencia, presiona el botón. Enviará tu ubicación GPS exacta al administrador con tu nombre y sucursal.</p>
-<button class="btn btn-danger" onclick="activarPanico()" style="padding:22px;font-size:20px;margin-top:16px;background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 8px 24px rgba(239,68,68,.5);animation:pulse 2s infinite;font-weight:900;letter-spacing:1px">🆘 ENVIAR SOS DE EMERGENCIA</button>
+<p style="font-size:11px;color:var(--muted);margin-top:6px">Si tienes emergencia, presiona el botón. Enviará tu ubicación GPS exacta al administrador.</p>
+<button class="btn btn-danger" onclick="activarPanico()" style="padding:20px;font-size:18px;margin-top:16px;background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 8px 20px rgba(239,68,68,.4)">🆘 ENVIAR SOS DE EMERGENCIA</button>
 <p id="msg-panico" style="font-size:12px;margin-top:10px;text-align:center"></p>
-<div style="background:#0f172a;border-radius:12px;padding:12px;margin-top:12px;font-size:11px"><b>📍 Tu ubicación actual:</b><br><span id="panico-ubicacion">Obteniendo GPS...</span><br><small style="color:#94a3b8">Se enviará automáticamente con el SOS</small></div>
-<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:10px;margin-top:12px;font-size:10px;color:#991b1b"><b>⚠️ Uso responsable:</b> Solo úsalo en emergencias reales. El administrador recibirá alerta inmediata con tu ubicación GPS y te contactará.</div>
+<div style="background:#0f172a;border-radius:12px;padding:12px;margin-top:12px;font-size:11px"><b>📍 Tu ubicación actual:</b><br><span id="panico-ubicacion">Obteniendo GPS...</span></div>
 </div>
 
-<!-- CLASIFICACIONES DEL ADMINISTRADOR -->
-<div class="card" style="border:2px solid #8b5cf6"><h3>⭐ Mis Calificaciones del Administrador</h3><p style="font-size:11px;color:var(--muted)">Aquí ves como te califica tu administrador (0-100 puntos)</p>
-<div id="mis-clasificaciones" style="margin-top:12px"></div>
-<div id="mi-ultima-evaluacion" style="margin-top:12px;background:#0f172a;border-radius:12px;padding:12px"></div>
-<button class="btn btn-dark" onclick="cargarMisClasificaciones()" style="margin-top:10px;font-size:11px;padding:8px">🔄 Actualizar Calificaciones</button>
-</div>
-
-<div class="card" style="border:2px solid #0ea5e9"><h3>📋 Historial de Pánico</h3><div id="mi-historial-panico" style="max-height:150px;overflow:auto;font-size:11px">Sin registros</div></div>
+<!-- CLASIFICACIONES DEL ADMIN DEBAJO DEL PANICO -->
+<div class="card" style="border:2px solid #8b5cf6;margin-top:12px"><h3>⭐ Mis Calificaciones del Admin</h3><p style="font-size:11px;color:var(--muted)">Calificación que te da el administrador</p><div id="mis-clasificaciones" style="margin-top:10px"></div><div id="mi-ultima-evaluacion" style="margin-top:10px"></div></div>
 </div>
 
 <div id="tab-emp-notif" class="tab-content"><div class="card"><h3>🔔 Notificaciones</h3><div id="emp-notificaciones" style="margin-top:10px"></div><div id="mis-notifs" style="margin-top:12px"></div><div id="mi-historial"></div></div></div>
@@ -1711,160 +1662,39 @@ cargarTodo = async function(){
 
 
 <script>
-// === NUEVAS FUNCIONES: PANICO MEJORADO + DASHBOARD RETARDOS + CLASIFICACIONES ===
-
+// SOLO LO QUE PIDIO: Clasificaciones + Dashboard retardos mejorado + Panico
 async function cargarMisClasificaciones(){
   try{
     const evals = await api('/empleado/'+USER_ID+'/historial');
     const cont = document.getElementById('mis-clasificaciones');
     const ultimaCont = document.getElementById('mi-ultima-evaluacion');
+    if(!cont) return;
     if(!evals || evals.length===0){
-      cont.innerHTML = '<div style="background:#0f172a;border-radius:12px;padding:12px;text-align:center;font-size:11px;color:#94a3b8">Aún no tienes calificaciones del administrador.<br>Tu jefe te evaluará pronto ⭐</div>';
-      ultimaCont.innerHTML = '';
+      cont.innerHTML = '<div style="background:#0f172a;padding:10px;border-radius:8px;font-size:11px;color:#94a3b8;text-align:center">Sin calificaciones aún</div>';
+      if(ultimaCont) ultimaCont.innerHTML='';
       return;
     }
-    // Mostrar todas
-    cont.innerHTML = evals.slice(-5).reverse().map(ev=>{
-      const total = ev.total||0;
-      let color = '#10b981'; let emoji='🌟';
-      if(total<60){ color='#ef4444'; emoji='⚠️'; }
-      else if(total<80){ color='#f59e0b'; emoji='👍'; }
-      else if(total<90){ color='#0ea5e9'; emoji='⭐'; }
-      return `<div style="background:#0f172a;border-left:4px solid ${color};border-radius:10px;padding:10px;margin-top:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <b style="font-size:12px">${emoji} Evaluación ${ev.fecha||''}</b>
-          <span style="background:${color};color:white;padding:4px 10px;border-radius:20px;font-weight:900;font-size:13px">${total}/100</span>
-        </div>
-        <div style="margin-top:6px;font-size:10px;color:#94a3b8;display:grid;grid-template-columns:1fr 1fr;gap:4px">
-          ${Object.entries(ev.calificaciones||{}).map(([k,v])=>`<span>${k}: <b style="color:${color}">${v}</b></span>`).join('')}
-        </div>
-        ${ev.comentario?`<div style="margin-top:6px;font-size:10px;background:#1e293b;padding:6px;border-radius:6px">💬 ${ev.comentario}</div>`:''}
-      </div>`;
-    }).join('');
-    
-    // Última evaluación destacada
-    const ultima = evals[evals.length-1];
-    if(ultima){
-      const total = ultima.total||0;
-      let color = '#10b981'; let nivel='Excelente';
-      if(total<60){ color='#ef4444'; nivel='Necesita mejorar'; }
-      else if(total<80){ color='#f59e0b'; nivel='Bueno'; }
-      else if(total<90){ color='#0ea5e9'; nivel='Muy Bueno'; }
-      ultimaCont.innerHTML = `<div style="background:linear-gradient(135deg,${color}15,${color}05);border:1px solid ${color}33;border-radius:12px;padding:12px">
-        <div style="font-size:11px;color:${color};font-weight:800">📌 ÚLTIMA CALIFICACIÓN - ${nivel.toUpperCase()}</div>
-        <div style="font-size:28px;font-weight:900;color:${color};margin:6px 0">${total}/100</div>
-        <div style="font-size:10px;color:#94a3b8">${ultima.fecha||''} - Evaluado por administrador</div>
-      </div>`;
+    cont.innerHTML = evals.slice(-3).reverse().map(ev=>`<div style="background:#0f172a;border-left:4px solid #8b5cf6;padding:8px;border-radius:8px;margin-top:6px;font-size:11px"><b>${ev.fecha||''} - ${ev.total||0}/100</b><br>${Object.entries(ev.calificaciones||{}).slice(0,4).map(([k,v])=>k+': '+v).join(' | ')}</div>`).join('');
+    if(ultimaCont && evals.length>0){
+      const u=evals[evals.length-1];
+      ultimaCont.innerHTML = `<div style="background:#8b5cf615;border:1px solid #8b5cf633;padding:10px;border-radius:10px;font-size:11px"><b>Última: ${u.total||0}/100</b> - ${u.fecha||''}</div>`;
     }
-  }catch(e){
-    console.log('Error clasificaciones', e);
-    document.getElementById('mis-clasificaciones').innerHTML = '<div style="font-size:11px;color:#ef4444">Error cargando calificaciones</div>';
-  }
+  }catch(e){ console.log(e); }
 }
-
-async function cargarHistorialPanico(){
-  try{
-    const panicos = await api('/panico/'+USER_ID);
-    const cont = document.getElementById('mi-historial-panico');
-    if(!panicos || panicos.length===0){
-      cont.innerHTML = '<span style="color:#94a3b8">Sin registros de pánico</span>';
-      return;
-    }
-    cont.innerHTML = panicos.slice(-5).reverse().map(p=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin-top:6px;border-left:3px solid #ef4444"><b>🆘 ${p.fecha}</b><br><small>📍 ${p.lat||''}, ${p.lng||''}</small><br><small>${p.mensaje||'SOS enviado'}</small></div>`).join('');
-  }catch(e){}
+const _oldCargarEmpleadoPro = typeof cargarEmpleadoPro!=='undefined'? cargarEmpleadoPro : null;
+if(_oldCargarEmpleadoPro){
+  cargarEmpleadoPro = async function(){
+    await _oldCargarEmpleadoPro();
+    setTimeout(cargarMisClasificaciones, 1000);
+  };
+} else {
+  // fallback
+  setTimeout(cargarMisClasificaciones, 2000);
 }
-
-// Mejorar dashboard retardos
-function mejorarDashboardRetardos(){
-  try{
-    const entradaEl = document.getElementById('total-retardo-entrada');
-    const comidaEl = document.getElementById('total-retardo-comida');
-    const horasEl = document.getElementById('total-horas-mes');
-    if(entradaEl){
-      const minEntrada = parseInt(entradaEl.innerText)||0;
-      const estadoEl = document.getElementById('estado-puntualidad');
-      const semanaEl = document.getElementById('retardos-semana');
-      const promedioEl = document.getElementById('retardo-promedio');
-      if(estadoEl){
-        if(minEntrada===0) { estadoEl.innerHTML='✅ <span style="color:#10b981">Excelente - Puntual</span>'; }
-        else if(minEntrada<=15) { estadoEl.innerHTML='⚠️ <span style="color:#f59e0b">Regular - '+minEntrada+' min</span>'; }
-        else { estadoEl.innerHTML='❌ <span style="color:#ef4444">Necesita mejorar - '+minEntrada+' min</span>'; }
-      }
-      if(semanaEl) semanaEl.innerText = Math.round(minEntrada/4) + ' min';
-      if(promedioEl) promedioEl.innerText = (minEntrada/22).toFixed(1) + ' min/día';
-    }
-  }catch(e){}
-}
-
-// Hook para cargar todo en empleado
-const oldCargarEmpleadoPro = cargarEmpleadoPro;
-cargarEmpleadoPro = async function(){
-  await oldCargarEmpleadoPro();
-  setTimeout(()=>{
-    cargarMisClasificaciones();
-    cargarHistorialPanico();
-    mejorarDashboardRetardos();
-  }, 800);
-};
-
-// Mejorar activarPanico original
-const oldActivarPanico = activarPanico;
-activarPanico = async function(){
-  if(!confirm('🚨 ¿Estás seguro de enviar SOS de emergencia?\n\nSe enviará tu ubicación GPS exacta al administrador.')) return;
-  document.getElementById('msg-panico').innerHTML='📡 Enviando SOS con tu ubicación...';
-  try{
-    const pos = await new Promise((res,rej)=>{
-      if(!navigator.geolocation) rej('No GPS');
-      navigator.geolocation.getCurrentPosition(p=>res(p), e=>rej(e), {enableHighAccuracy:true, timeout:10000});
-    });
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-    document.getElementById('panico-ubicacion').innerText = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)} - Precisión: ${pos.coords.accuracy.toFixed(0)}m`;
-    const r = await api('/panico','POST',{empleado_id:USER_ID, lat:lat, lng:lng, mensaje:'🆘 SOS EMERGENCIA - Necesito ayuda urgente', fecha:new Date().toLocaleString()});
-    document.getElementById('msg-panico').innerHTML='✅ <b style="color:#10b981">¡SOS ENVIADO!</b><br>El administrador recibió tu ubicación y te contactará pronto.<br>📍 '+lat.toFixed(4)+', '+lng.toFixed(4);
-    // Vibrar si se puede
-    if(navigator.vibrate) navigator.vibrate([300,100,300,100,300]);
-    cargarHistorialPanico();
-  }catch(e){
-    // Si falla GPS, envía sin ubicación
-    try{
-      await api('/panico','POST',{empleado_id:USER_ID, lat:0, lng:0, mensaje:'🆘 SOS sin GPS - '+ (e.message||e)});
-      document.getElementById('msg-panico').innerHTML='✅ SOS enviado sin GPS (GPS falló). El admin te contactará.';
-    }catch(e2){
-      document.getElementById('msg-panico').innerHTML='❌ Error: '+(e2.detail||e.message||e);
-    }
-  }
-};
-
-// Actualizar ubicación en tiempo real en tab pánico
-setInterval(()=>{
-  const panicoTab = document.getElementById('tab-emp-panico');
-  if(panicoTab && panicoTab.classList.contains('active')){
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(pos=>{
-        const el=document.getElementById('panico-ubicacion');
-        if(el) el.innerText=`Lat: ${pos.coords.latitude.toFixed(6)}, Lng: ${pos.coords.longitude.toFixed(6)} - Precisión: ${pos.coords.accuracy.toFixed(0)}m - Actualizado: ${new Date().toLocaleTimeString()}`;
-      },()=>{}, {enableHighAccuracy:true});
-    }
-  }
-}, 5000);
-
-// CSS animación pulso para botón pánico
-const style = document.createElement('style');
-style.innerHTML = `@keyframes pulse{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(239,68,68,.7)}70%{transform:scale(1.02);box-shadow:0 0 0 12px rgba(239,68,68,0)}}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(239,68,68,0)}}`;
-document.head.appendChild(style);
-
-console.log('✅ Nuevas funciones empleado cargadas: Panico + Dashboard Retardos + Clasificaciones');
 </script>
 
 </body></html>
 """
-
-
-
-@app.get("/panico/{eid}")
-def get_panico_eid(eid: str):
-    return [p for p in panico_db if p.get("empleado_id")==eid]
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
