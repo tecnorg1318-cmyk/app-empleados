@@ -19,15 +19,12 @@ DB_SQLITE = "clockrd.db"
 DATABASE_URL = os.environ.get("DATABASE_URL", "") # Render PostgreSQL
 
 def get_now_mexico():
-    """Retorna hora real de Mexico en tiempo real"""
     try:
-        if TZ_MEXICO:
-            return datetime.now(TZ_MEXICO)
-        else:
-            # Fallback UTC-6
-            return datetime.utcnow() - timedelta(hours=6)
+        import pytz
+        tz = pytz.timezone("America/Mexico_City")
+        return datetime.now(tz)
     except:
-        return datetime.now()
+        return datetime.utcnow() - timedelta(hours=6)
 
 def get_now_iso():
     return get_now_mexico().isoformat()
