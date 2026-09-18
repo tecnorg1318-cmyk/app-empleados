@@ -1872,6 +1872,72 @@ def companeros_hoy(suc_id: str):
             trabajando.append({"id":eid,"nombre":emp.get("nombre"),"puesto":emp.get("puesto"),"entrada":asist.get("entrada") if asist else None,"estado":"presente" if asist and asist.get("entrada") else "ausente"})
     return trabajando
 
+def editarVacAdmin(id):
+ ...tu función...
+
+# === AGREGADO SIN BORRAR NADA: VACACIONES POR DIAS QUE EL EMPLEADO ELIGE ===
+def calcular_dias_vacaciones(fecha_inicio: str, fecha_fin: str):
+    try:
+        d1 = datetime.strptime(fecha_inicio, "%Y-%m-%d").date()
+        d2 = datetime.strptime(fecha_fin, "%Y-%m-%d").date()
+        delta = (d2 - d1).days + 1
+        return delta if delta > 0 else 0
+    except:
+        return 0
+
+@app.get("/api/vacaciones/listar")
+def listar_vacaciones_api():
+    return {"total": len(vacaciones_db), "vacaciones": vacaciones_db[::-1]}
+
+@app.get("/api/vacaciones/empleado/{empleado_id}")
+def vacaciones_por_empleado_api(empleado_id: str):
+    lista = [v for v in vacaciones_db if v["empleado_id"] == empleado_id]
+    return {"empleado_id": empleado_id, "total": len(lista), "vacaciones": lista[::-1]}
+
+@app.put("/api/vacaciones/{vac_id}/aprobar")
+def aprobar_vacacion_api(vac_id: str):
+    for v in vacaciones_db:
+        if v["id"] == vac_id:
+            v["estado"] = "aprobado"
+            save_db()
+            return {"ok": True, "vacacion": v}
+    raise HTTPException(404, "No existe")
+
+@app.put("/api/vacaciones/{vac_id}/rechazar")
+def rechazar_vacacion_api(vac_id: str):
+    for v in vacaciones_db:
+        if v["id"] == vac_id:
+            v["estado"] = "rechazado"
+            save_db()
+            return {"ok": True, "vacacion": v}
+    raise HTTPException(404, "No existe")
+
+@app.post("/api/vacaciones/solicitar-dias")
+def solicitar_vacaciones_dias(data: dict):
+    empleado_id = data.get("empleado_id")
+    fecha_inicio = data.get("fecha_inicio")
+    fecha_fin = data.get("fecha_fin")
+    if not empleado_id or not fecha_inicio or not fecha_fin:
+        raise HTTPException(400, "Falta empleado_id, fecha_inicio, fecha_fin")
+    dias = calcular_dias_vacaciones(fecha_inicio, fecha_fin)
+    if dias <= 0:
+        raise HTTPException(400, "Fecha fin debe ser después de inicio YYYY-MM-DD")
+    vac={
+        "id":str(uuid.uuid4())[:8],
+        "empleado_id":empleado_id,
+        "nombre":empleados_db.get(empleado_id,{}).get("nombre",empleado_id),
+        "tipo":data.get("tipo","vacaciones"),
+        "fecha_inicio":fecha_inicio,
+        "fecha_fin":fecha_fin,
+        "dias":dias,
+        "motivo":data.get("motivo",""),
+        "estado":"pendiente",
+        "fecha_solicitud":get_now_iso()
+    }
+    vacaciones_db.append(vac)
+    save_db()
+    return {"ok": True, "msg": f"Solicitud de {dias} dias creada", "vacacion": vac}
+
 HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clock RD PRO</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
