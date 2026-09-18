@@ -1867,6 +1867,22 @@ def companeros_hoy(suc_id: str):
             trabajando.append({"id":eid,"nombre":emp.get("nombre"),"puesto":emp.get("puesto"),"entrada":asist.get("entrada") if asist else None,"estado":"presente" if asist and asist.get("entrada") else "ausente"})
     return trabajando
 
+@app.get("/api/hora-servidor")
+def hora_servidor():
+    ahora = get_now_mexico()
+    return {
+        "hora_mexico": ahora.strftime("%Y-%m-%d %H:%M:%S"),
+        "hora_iso": ahora.isoformat(),
+        "timestamp": ahora.timestamp()
+    }
+
+@app.get("/api/debug-db")
+def debug_db():
+    return {
+        "tipo_bd": "PostgreSQL" if DATABASE_URL else "JSON",
+        "hora_servidor": get_now_mexico().strftime("%Y-%m-%d %H:%M:%S CDMX")
+    }
+
 HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clock RD PRO</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
