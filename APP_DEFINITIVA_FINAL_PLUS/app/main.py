@@ -1873,8 +1873,6 @@ def companeros_hoy(suc_id: str):
     return trabajando
 
 def editarVacAdmin(id):
- ...tu función...
-
 # === AGREGADO SIN BORRAR NADA: VACACIONES POR DIAS QUE EL EMPLEADO ELIGE ===
 def calcular_dias_vacaciones(fecha_inicio: str, fecha_fin: str):
     try:
