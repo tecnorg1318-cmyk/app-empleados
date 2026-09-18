@@ -14,7 +14,7 @@ except:
 import uuid, math, json, os, hashlib, random
 
 app = FastAPI(title="Control BONITA 100% FINAL")
-0app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 DB_FILE = "database.json"
 DB_SQLITE = "clockrd.db"
 DATABASE_URL = os.environ.get("DATABASE_URL", "") # Render PostgreSQL
