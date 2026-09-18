@@ -1,4 +1,3 @@
-
 # BONITA SUPER V4 DEFINITIVA - FIX NO BORRA NADA + UPDATE SEGURO
 # Incluye: Admin 2,3,4,5,6,7,8 + mult 2,4,5 + Empleado 1-9 + avisos selectivos + vac edit
 # METODO SEGURO PARA ACTUALIZAR SIN BORRAR: Este archivo ya migra JSON->Neon automatico
