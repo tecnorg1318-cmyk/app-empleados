@@ -394,12 +394,47 @@ def get_reporte_auto(): return reporte_auto_db
 def set_reporte_auto(data: dict):
     global reporte_auto_db; reporte_auto_db.update(data); save_db(); return reporte_auto_db
 @app.put("/api/vacaciones/{vid}/editar")
-def editar_vac(vid: str, data: dict):
+def editar_vac(vid: str, data: dict): 
     v=next((x for x in vacaciones_db if x["id"]==vid), None)
     if not v: raise HTTPException(404)
     v.update({k:data[k] for k in ["fecha_inicio","fecha_fin","tipo","motivo"] if k in data})
     save_db()
     return v
+# === VACACIONES POR DIAS - PEGALO AQUI ===
+def calcular_dias_vacaciones(fi, ff):
+    try:
+        from datetime import datetime as dt
+        d1 = dt.strptime(fi, "%Y-%m-%d").date()
+        d2 = dt.strptime(ff, "%Y-%m-%d").date()
+        return (d2 - d1).days + 1
+    except:
+        return 0
+
+@app.post("/api/vacaciones/solicitar-dias")
+def solicitar_dias_api(data: dict):
+    eid = data.get("empleado_id")
+    fi = data.get("fecha_inicio")
+    ff = data.get("fecha_fin")
+    if not eid or not fi or not ff:
+        raise HTTPException(400, "Falta empleado_id, fecha_inicio, fecha_fin")
+    dias = calcular_dias_vacaciones(fi, ff)
+    vac = {
+        "id": str(uuid.uuid4())[:8],
+        "empleado_id": eid,
+        "nombre": empleados_db.get(eid, {}).get("nombre", eid),
+        "fecha_inicio": fi,
+        "fecha_fin": ff,
+        "dias": dias,
+        "motivo": data.get("motivo", ""),
+        "estado": "pendiente",
+        "fecha_solicitud": get_now_iso()
+    }
+    vacaciones_db.append(vac)
+    save_db()
+    return vac
+
+
+
 
 @app.get("/api/reporte-nocturno")
 def reporte_nocturno():
